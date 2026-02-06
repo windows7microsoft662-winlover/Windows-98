@@ -1,0 +1,1335 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Windows 98 (Real Splash + Sound + Desktop)</title>
+<style>
+  :root{
+    --desk:#008080;
+    --bar:#c0c0c0;
+    --bar2:#d4d0c8;
+    --shadow:#808080;
+    --shadow2:#404040;
+    --light:#ffffff;
+    --blue:#000080;
+    --inactive:#7a7aa7;
+    --menu:#c0c0c0;
+    --sel:#000080;
+    --selText:#fff;
+    --font: Tahoma, Verdana, Arial, sans-serif;
+    --mono: "Lucida Console", Consolas, monospace;
+  }
+  *{ box-sizing:border-box; }
+  html,body{ height:100%; margin:0; }
+  body{
+    background:var(--desk);
+    font-family:var(--font);
+    overflow:hidden;
+  }
+
+  /* ---- classic 98 bevel helpers ---- */
+  .bevel-out{
+    border-top:2px solid var(--light);
+    border-left:2px solid var(--light);
+    border-right:2px solid var(--shadow);
+    border-bottom:2px solid var(--shadow);
+    background:var(--bar);
+  }
+  .bevel-in{
+    border-top:2px solid var(--shadow);
+    border-left:2px solid var(--shadow);
+    border-right:2px solid var(--light);
+    border-bottom:2px solid var(--light);
+    background:#fff;
+  }
+  .bevel-out-1{
+    border-top:1px solid var(--light);
+    border-left:1px solid var(--light);
+    border-right:1px solid var(--shadow);
+    border-bottom:1px solid var(--shadow);
+    background:var(--bar);
+  }
+
+  /* ---- desktop ---- */
+  #desktop{
+    position:relative;
+    width:100%;
+    height:calc(100% - 32px);
+    padding:10px;
+  }
+
+  .icon{
+    position:absolute;
+    width:76px;
+    text-align:center;
+    font-size:12px;
+    color:#fff;
+    cursor:default;
+    user-select:none;
+  }
+  .icon .ico{
+    width:32px; height:32px;
+    margin:0 auto 4px;
+    image-rendering: pixelated;
+    filter: drop-shadow(1px 1px 0 rgba(0,0,0,.35));
+  }
+  .icon .label{
+    display:inline-block;
+    padding:2px 3px;
+    border:1px solid transparent;
+  }
+  .icon.selected .label{
+    background:var(--sel);
+    color:var(--selText);
+    border:1px dotted #fff;
+  }
+
+  /* selection rectangle */
+  #selectBox{
+    position:absolute;
+    border:1px dotted #fff;
+    background:rgba(0,0,128,.25);
+    display:none;
+    pointer-events:none;
+    z-index:5;
+  }
+
+  /* ---- taskbar ---- */
+  #taskbar{
+    position:fixed;
+    left:0; right:0; bottom:0;
+    height:32px;
+    background:var(--bar);
+    border-top:2px solid var(--light);
+    display:flex;
+    align-items:center;
+    gap:6px;
+    padding:2px;
+    z-index:9999;
+  }
+  #startBtn{
+    height:28px;
+    min-width:78px;
+    padding:0 8px;
+    display:flex;
+    align-items:center;
+    gap:6px;
+    font-weight:bold;
+    font-size:12px;
+    cursor:pointer;
+  }
+  #startBtn:active{ transform:translateY(1px); }
+  #taskBtns{
+    flex:1;
+    display:flex;
+    gap:6px;
+    overflow:auto;
+    padding-right:6px;
+  }
+  .taskBtn{
+    height:28px;
+    min-width:150px;
+    padding:0 8px;
+    display:flex;
+    align-items:center;
+    gap:6px;
+    font-size:12px;
+    cursor:pointer;
+    white-space:nowrap;
+    user-select:none;
+  }
+  .taskBtn.active{
+    border-top:2px solid var(--shadow);
+    border-left:2px solid var(--shadow);
+    border-right:2px solid var(--light);
+    border-bottom:2px solid var(--light);
+    background:var(--bar2);
+  }
+  #tray{
+    height:28px;
+    display:flex;
+    align-items:center;
+    gap:8px;
+    padding-left:8px;
+    border-left:2px solid var(--shadow);
+    position:relative;
+  }
+  #clock{
+    font-size:12px;
+    padding:3px 8px;
+    min-width:56px;
+  }
+
+  /* ---- menus ---- */
+  .menu{
+    position:absolute;
+    background:var(--menu);
+    border-top:2px solid var(--light);
+    border-left:2px solid var(--light);
+    border-right:2px solid var(--shadow2);
+    border-bottom:2px solid var(--shadow2);
+    box-shadow:2px 2px 0 rgba(0,0,0,.35);
+    padding:2px;
+    z-index:20000;
+  }
+  .hidden{ display:none !important; }
+  .menuItem{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:6px 8px;
+    font-size:12px;
+    color:#000;
+    cursor:pointer;
+    gap:14px;
+    user-select:none;
+  }
+  .menuItem:hover{
+    background:var(--sel);
+    color:var(--selText);
+  }
+  .menuSep{
+    height:1px;
+    background:var(--shadow);
+    margin:2px 3px;
+  }
+  .menuLeft{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    min-width:190px;
+  }
+  .miIco{
+    width:16px; height:16px;
+    image-rendering:pixelated;
+    flex:0 0 auto;
+  }
+
+  /* ---- windows ---- */
+  .win{
+    position:absolute;
+    background:var(--bar);
+    border-top:2px solid var(--light);
+    border-left:2px solid var(--light);
+    border-right:2px solid var(--shadow2);
+    border-bottom:2px solid var(--shadow2);
+    box-shadow:2px 2px 0 rgba(0,0,0,.35);
+    z-index:100;
+  }
+  .titlebar{
+    height:22px;
+    display:flex;
+    align-items:center;
+    padding:0 4px;
+    gap:6px;
+    background:var(--blue);
+    color:#fff;
+    font-size:12px;
+    font-weight:bold;
+    cursor:move;
+    user-select:none;
+  }
+  .win.inactive .titlebar{ background:var(--inactive); }
+  .titlebar .title{
+    flex:1;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+  .wbtns{ display:flex; gap:3px; }
+  .wbtn{
+    width:18px;
+    height:18px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:12px;
+    line-height:12px;
+    cursor:pointer;
+    user-select:none;
+  }
+  .menubar{
+    display:flex;
+    gap:10px;
+    padding:4px 6px;
+    font-size:12px;
+    background:var(--bar);
+    border-bottom:1px solid #b6b6b6;
+    user-select:none;
+  }
+  .menubar .m{
+    padding:1px 4px;
+    cursor:default;
+  }
+  .menubar .m:hover{ outline:1px dotted #000; }
+  .toolbar{
+    display:flex;
+    gap:8px;
+    padding:6px;
+    font-size:12px;
+    background:var(--bar2);
+    border-bottom:1px solid #b6b6b6;
+    user-select:none;
+  }
+  .toolBtn{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    padding:2px 6px;
+    cursor:pointer;
+  }
+  .toolBtn:hover{
+    outline:1px dotted #000;
+    background:#efefef;
+  }
+  .content{
+    background:#fff;
+    padding:0;
+    height:calc(100% - 22px - 24px - 32px - 18px);
+    overflow:auto;
+  }
+  .status{
+    height:18px;
+    padding:2px 6px;
+    font-size:11px;
+    background:var(--bar);
+    border-top:1px solid #b6b6b6;
+    user-select:none;
+  }
+  .resizer{
+    position:absolute;
+    right:2px;
+    bottom:2px;
+    width:14px;
+    height:14px;
+    cursor:nwse-resize;
+    background:
+      linear-gradient(135deg, transparent 55%, #9c9c9c 55%, #9c9c9c 60%, transparent 60%) ,
+      linear-gradient(135deg, transparent 70%, #9c9c9c 70%, #9c9c9c 75%, transparent 75%) ,
+      linear-gradient(135deg, transparent 85%, #9c9c9c 85%, #9c9c9c 90%, transparent 90%);
+    opacity:.7;
+  }
+
+  /* dialogs */
+  .dlgBody{ padding:12px; font-size:12px; }
+  .dlgBtns{
+    display:flex;
+    justify-content:flex-end;
+    gap:8px;
+    padding:10px 10px 12px;
+  }
+  .btn98{
+    min-width:75px;
+    height:24px;
+    padding:0 10px;
+    font-size:12px;
+    cursor:pointer;
+    user-select:none;
+  }
+
+  /* ===== REAL Win98 splash + safe-to-shutdown ===== */
+  #overlay{
+    position:fixed;
+    inset:0;
+    background:#000;
+    display:none;
+    align-items:center;
+    justify-content:center;
+    z-index:100000;
+  }
+  #overlay.show{ display:flex; }
+
+  #bootScreen{
+    width:100%;
+    height:100%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    position:relative;
+  }
+  #bootSplash{
+    width:100vw;
+    height:100vh;
+    object-fit:contain; /* like real splash */
+  }
+  #soundGate{
+    position:absolute;
+    bottom:18px;
+    left:50%;
+    transform:translateX(-50%);
+    color:#dcdcdc;
+    font-family:var(--mono);
+    font-size:13px;
+    padding:8px 10px;
+    background:rgba(0,0,0,.65);
+    border:1px solid #404040;
+    display:none;
+    user-select:none;
+    cursor:pointer;
+  }
+  #soundGate.show{ display:block; }
+
+  #safeScreen{
+    display:none;
+    width:100%;
+    height:100%;
+    align-items:center;
+    justify-content:center;
+    color:#ff9900;
+    font-family: var(--mono);
+    font-size:22px;
+    text-align:center;
+    padding:20px;
+  }
+  #safeScreen.show{ display:flex; }
+
+  /* ===== Win98 tray volume popup ===== */
+  #volPopup{
+    position:absolute;
+    right:6px;
+    bottom:34px;
+    width:170px;
+    padding:6px;
+    z-index:30000;
+  }
+  #volPopup.hidden{ display:none; }
+  #volTitle{
+    font-size:12px;
+    margin:2px 0 6px;
+    user-select:none;
+  }
+  #volRow{
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  #volSlider{
+    width:100%;
+  }
+  #muteRow{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    margin-top:6px;
+    font-size:12px;
+    user-select:none;
+  }
+
+  /* optional scanlines */
+  #scanlines{
+    position:fixed; inset:0;
+    pointer-events:none;
+    background: repeating-linear-gradient(
+      to bottom,
+      rgba(0,0,0,0.0),
+      rgba(0,0,0,0.0) 2px,
+      rgba(0,0,0,0.06) 3px
+    );
+    mix-blend-mode:multiply;
+    opacity:.0;
+    z-index:150000;
+  }
+  #scanlines.on{ opacity:.35; }
+</style>
+</head>
+
+<body>
+<div id="desktop">
+  <div id="selectBox"></div>
+</div>
+
+<!-- Start Menu -->
+<div id="startMenu" class="menu hidden"></div>
+<div id="subMenu" class="menu hidden"></div>
+
+<!-- Right click menu -->
+<div id="rcMenu" class="menu hidden"></div>
+
+<!-- Overlay (BOOT + SAFE) -->
+<div id="overlay">
+  <div id="bootScreen">
+    <img id="bootSplash" src="C:/Users/PowerCube/Desktop/for 98/win98start.jpg" alt="Windows 98 Startup" />
+    <div id="soundGate" class="bevel-out-1">CLICK TO ENABLE SOUND</div>
+    <video id="bootSound" src="C:/Users/PowerCube/Desktop/for 98/win98.ogv" preload="auto" playsinline></video>
+  </div>
+  <div id="safeScreen">
+    It is now safe to turn off your computer.
+  </div>
+</div>
+
+<div id="scanlines"></div>
+
+<!-- Taskbar -->
+<div id="taskbar">
+  <div id="startBtn" class="bevel-out">
+    <div id="startIco" style="width:16px;height:16px; image-rendering:pixelated;"></div>
+    Start
+  </div>
+
+  <div id="taskBtns"></div>
+
+  <div id="tray">
+    <div id="trayIco" title="Volume" class="bevel-out-1"
+         style="width:18px;height:18px; display:flex;align-items:center;justify-content:center; cursor:pointer;">🔊</div>
+
+    <div id="clock" class="bevel-in">00:00</div>
+
+    <!-- volume popup -->
+    <div id="volPopup" class="bevel-out hidden">
+      <div id="volTitle"><b>Volume</b></div>
+      <div id="volRow">
+        <span style="font-size:14px; user-select:none;">🔊</span>
+        <input id="volSlider" type="range" min="0" max="100" value="30" />
+      </div>
+      <label id="muteRow">
+        <input id="muteBox" type="checkbox" />
+        Mute
+      </label>
+    </div>
+  </div>
+</div>
+
+<script>
+(() => {
+  const desktop = document.getElementById('desktop');
+  const startBtn = document.getElementById('startBtn');
+  const startMenu = document.getElementById('startMenu');
+  const subMenu = document.getElementById('subMenu');
+  const rcMenu = document.getElementById('rcMenu');
+  const taskBtns = document.getElementById('taskBtns');
+  const clockEl = document.getElementById('clock');
+  const scanlines = document.getElementById('scanlines');
+  const selectBox = document.getElementById('selectBox');
+
+  const overlay = document.getElementById('overlay');
+  const bootScreen = document.getElementById('bootScreen');
+  const safeScreen = document.getElementById('safeScreen');
+  const bootSound = document.getElementById('bootSound');
+  const soundGate = document.getElementById('soundGate');
+
+  // volume UI
+  const trayIco = document.getElementById('trayIco');
+  const volPopup = document.getElementById('volPopup');
+  const volSlider = document.getElementById('volSlider');
+  const muteBox = document.getElementById('muteBox');
+
+  // master volume state
+  const audioState = {
+    vol: 0.30,     // 0..1
+    muted: false
+  };
+
+  // keep bootSound synced with master volume
+  function applyVolume(){
+    const v = audioState.muted ? 0 : audioState.vol;
+    bootSound.volume = clamp(v, 0, 1);
+    // update tray icon look
+    trayIco.textContent = (v === 0) ? "🔇" : "🔊";
+  }
+
+  function clamp(x,a,b){ return Math.max(a, Math.min(b,x)); }
+
+  function svgData(svg){
+    const s = svg.replace(/\n/g,'').replace(/\t/g,'').trim();
+    return `data:image/svg+xml;utf8,${encodeURIComponent(s)}`;
+  }
+
+  const ICONS = {
+    win: svgData(`
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16">
+        <rect width="16" height="16" fill="#c0c0c0"/>
+        <rect x="1" y="1" width="14" height="14" fill="#fff" stroke="#000" stroke-width="1"/>
+        <rect x="2" y="2" width="12" height="4" fill="#000080"/>
+        <rect x="3" y="3" width="2" height="2" fill="#ff0000"/>
+        <rect x="6" y="3" width="2" height="2" fill="#00ff00"/>
+        <rect x="9" y="3" width="2" height="2" fill="#ffff00"/>
+        <rect x="2" y="7" width="12" height="7" fill="#dcdcdc"/>
+      </svg>`),
+    folder: svgData(`
+      <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32">
+        <rect width="32" height="32" fill="none"/>
+        <path d="M4 10h10l2 3h12v15H4z" fill="#f4d04d" stroke="#000" stroke-width="1"/>
+        <path d="M4 10h12l2 3H4z" fill="#ffe27a" stroke="#000" stroke-width="1"/>
+        <rect x="5" y="14" width="22" height="12" fill="#f8de73" opacity=".55"/>
+      </svg>`),
+    computer: svgData(`
+      <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32">
+        <rect width="32" height="32" fill="none"/>
+        <rect x="6" y="6" width="20" height="14" fill="#dcdcdc" stroke="#000" stroke-width="1"/>
+        <rect x="8" y="8" width="16" height="10" fill="#000080"/>
+        <rect x="10" y="10" width="4" height="3" fill="#00ff00"/>
+        <rect x="15" y="10" width="4" height="3" fill="#ffff00"/>
+        <rect x="20" y="10" width="4" height="3" fill="#ff0000"/>
+        <rect x="10" y="21" width="12" height="3" fill="#c0c0c0" stroke="#000" stroke-width="1"/>
+        <rect x="12" y="24" width="8" height="2" fill="#808080"/>
+      </svg>`),
+    bin: svgData(`
+      <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32">
+        <rect width="32" height="32" fill="none"/>
+        <rect x="10" y="8" width="12" height="3" fill="#c0c0c0" stroke="#000" stroke-width="1"/>
+        <rect x="11" y="11" width="10" height="14" fill="#e6e6e6" stroke="#000" stroke-width="1"/>
+        <rect x="12" y="13" width="2" height="10" fill="#b0b0b0"/>
+        <rect x="15" y="13" width="2" height="10" fill="#b0b0b0"/>
+        <rect x="18" y="13" width="2" height="10" fill="#b0b0b0"/>
+        <rect x="13" y="6" width="6" height="2" fill="#808080"/>
+        <path d="M9 18c4 0 6-6 14-2" fill="none" stroke="#00aa00" stroke-width="2"/>
+      </svg>`),
+    doc: svgData(`
+      <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32">
+        <rect width="32" height="32" fill="none"/>
+        <path d="M9 6h12l4 4v16H9z" fill="#ffffff" stroke="#000" stroke-width="1"/>
+        <path d="M21 6v4h4" fill="#dcdcdc" stroke="#000" stroke-width="1"/>
+        <rect x="11" y="13" width="12" height="2" fill="#000080"/>
+        <rect x="11" y="17" width="10" height="2" fill="#808080"/>
+        <rect x="11" y="21" width="8" height="2" fill="#808080"/>
+      </svg>`),
+    ie: svgData(`
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16">
+        <rect width="16" height="16" fill="none"/>
+        <circle cx="8" cy="8" r="6" fill="#2a6bd6" stroke="#000" stroke-width="1"/>
+        <path d="M3 7h10" stroke="#fff" stroke-width="1.5"/>
+        <path d="M5 11c2 1 6 1 8-1" stroke="#ffd000" stroke-width="2" fill="none"/>
+      </svg>`),
+    gear: svgData(`
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16">
+        <rect width="16" height="16" fill="none"/>
+        <circle cx="8" cy="8" r="3" fill="#dcdcdc" stroke="#000" stroke-width="1"/>
+        <path d="M8 1v3M8 12v3M1 8h3M12 8h3M3 3l2 2M11 11l2 2M13 3l-2 2M5 11l-2 2"
+          stroke="#000" stroke-width="1"/>
+      </svg>`),
+    shutdown: svgData(`
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16">
+        <rect width="16" height="16" fill="none"/>
+        <path d="M8 1v7" stroke="#000" stroke-width="2"/>
+        <path d="M4 3c-2 1-3 3-3 5a7 7 0 0 0 14 0c0-2-1-4-3-5"
+          fill="none" stroke="#000" stroke-width="2"/>
+      </svg>`),
+    question: svgData(`
+      <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32">
+        <rect width="32" height="32" fill="none"/>
+        <circle cx="16" cy="16" r="12" fill="#ffffcc" stroke="#000" stroke-width="1"/>
+        <path d="M13 13c1-3 6-3 6 0 0 3-3 2-3 5" fill="none" stroke="#000" stroke-width="2"/>
+        <circle cx="16" cy="22" r="1.5" fill="#000"/>
+      </svg>`)
+  };
+
+  // Start icon
+  const startIco = document.getElementById('startIco');
+  startIco.innerHTML = `<img src="${ICONS.win}" width="16" height="16" style="image-rendering:pixelated" />`;
+
+  // --------- Sound helpers (volume controlled) ----------
+  function beep(freq=880, ms=110, type="square"){
+    const vol = audioState.muted ? 0 : audioState.vol;
+    if(vol <= 0) return;
+    try{
+      const ctx = new (window.AudioContext||window.webkitAudioContext)();
+      const o = ctx.createOscillator();
+      const g = ctx.createGain();
+      o.type = type; o.frequency.value = freq;
+      g.gain.value = 0.12 * vol; // scale with slider
+      o.connect(g); g.connect(ctx.destination);
+      o.start();
+      setTimeout(()=>{ o.stop(); ctx.close(); }, ms);
+    }catch{}
+  }
+
+  // --------- Clock ----------
+  function updateClock(){
+    const d = new Date();
+    const hh = String(d.getHours()).padStart(2,'0');
+    const mm = String(d.getMinutes()).padStart(2,'0');
+    clockEl.textContent = `${hh}:${mm}`;
+  }
+  updateClock(); setInterval(updateClock, 1000);
+
+  // --------- Menus ----------
+  function hideMenus(){
+    startMenu.classList.add('hidden');
+    subMenu.classList.add('hidden');
+    rcMenu.classList.add('hidden');
+  }
+
+  function setMenu(el, items){
+    el.innerHTML = '';
+    for(const it of items){
+      if(it.sep){
+        const s = document.createElement('div');
+        s.className = 'menuSep';
+        el.appendChild(s);
+        continue;
+      }
+      const row = document.createElement('div');
+      row.className = 'menuItem';
+      row.dataset.action = it.action || '';
+      row.dataset.sub = it.sub ? '1' : '';
+      row.innerHTML = `
+        <div class="menuLeft">
+          ${it.icon ? `<img class="miIco" src="${it.icon}" />` : `<div style="width:16px;height:16px"></div>`}
+          <div>${escapeHtml(it.label)}</div>
+        </div>
+        <div class="arrow">${it.sub ? '▶' : ''}</div>
+      `;
+      row.addEventListener('mouseenter', () => {
+        if(it.sub){
+          const r = row.getBoundingClientRect();
+          subMenu.style.left = (r.right - 2) + 'px';
+          subMenu.style.top  = r.top + 'px';
+          setMenu(subMenu, it.sub);
+          subMenu.classList.remove('hidden');
+        }else{
+          subMenu.classList.add('hidden');
+        }
+      });
+      row.addEventListener('click', (e)=>{
+        e.stopPropagation();
+        if(it.sub) return;
+        hideMenus();
+        it.onClick?.();
+        if(it.action) handleAction(it.action);
+      });
+      el.appendChild(row);
+    }
+  }
+
+  const programsSub = [
+    { label:"Accessories", icon:ICONS.folder, sub:[
+      { label:"Notepad", icon:ICONS.doc, action:"open:notepad" },
+      { label:"Calculator", icon:ICONS.doc, action:"open:calc" },
+      { label:"Paint", icon:ICONS.doc, action:"open:paint" },
+    ]},
+    { label:"Internet Explorer", icon:ICONS.ie, action:"open:ie" },
+    { sep:true },
+    { label:"MS-DOS Prompt", icon:ICONS.doc, action:"open:dos" },
+  ];
+
+  const startItems = [
+    { label:"Programs", icon:ICONS.folder, sub: programsSub },
+    { label:"Documents", icon:ICONS.doc, action:"toast:docs" },
+    { label:"Settings", icon:ICONS.gear, action:"open:settings" },
+    { sep:true },
+    { label:"Run…", icon:ICONS.doc, action:"open:run" },
+    { label:"Help", icon:ICONS.question, action:"open:help" },
+    { sep:true },
+    { label:"Shut Down…", icon:ICONS.shutdown, action:"shutdown" },
+  ];
+  setMenu(startMenu, startItems);
+
+  const rcItems = [
+    { label:"Arrange Icons", icon:ICONS.folder, action:"toast:arrange" },
+    { label:"Refresh", icon:ICONS.doc, action:"refresh" },
+    { sep:true },
+    { label:"New → Folder", icon:ICONS.folder, action:"newfolder" },
+    { sep:true },
+    { label:"Display → Scanlines", icon:ICONS.gear, action:"scanlines" },
+    { label:"Fake Error", icon:ICONS.doc, action:"error" },
+    { sep:true },
+    { label:"Properties", icon:ICONS.gear, action:"open:properties" },
+  ];
+  setMenu(rcMenu, rcItems);
+
+  startBtn.addEventListener('click', (e)=>{
+    e.stopPropagation();
+    rcMenu.classList.add('hidden');
+    const isOpen = !startMenu.classList.contains('hidden');
+    if(isOpen){ hideMenus(); return; }
+    startMenu.style.left = '2px';
+    startMenu.style.bottom = '34px';
+    startMenu.classList.remove('hidden');
+    beep(660,80);
+  });
+
+  document.addEventListener('click', ()=>{
+    hideMenus();
+    hideVolumePopup();
+  });
+
+  document.addEventListener('contextmenu', (e)=>{
+    e.preventDefault();
+    hideMenus();
+    hideVolumePopup();
+    rcMenu.style.left = e.clientX + 'px';
+    rcMenu.style.top  = e.clientY + 'px';
+    rcMenu.classList.remove('hidden');
+  });
+
+  // --------- Volume popup ----------
+  function showVolumePopup(){
+    volPopup.classList.remove('hidden');
+    // sync UI
+    volSlider.value = Math.round(audioState.vol * 100);
+    muteBox.checked = audioState.muted;
+  }
+  function hideVolumePopup(){
+    volPopup.classList.add('hidden');
+  }
+  trayIco.addEventListener('click', (e)=>{
+    e.stopPropagation();
+    // toggle popup
+    if(volPopup.classList.contains('hidden')) showVolumePopup();
+    else hideVolumePopup();
+    beep(740,70);
+  });
+  volPopup.addEventListener('click', (e)=>e.stopPropagation());
+
+  volSlider.addEventListener('input', ()=>{
+    audioState.vol = clamp(Number(volSlider.value)/100, 0, 1);
+    if(audioState.vol > 0) audioState.muted = false;
+    applyVolume();
+  });
+  muteBox.addEventListener('change', ()=>{
+    audioState.muted = !!muteBox.checked;
+    applyVolume();
+  });
+
+  // --------- Desktop icons ----------
+  let selectedIconEl = null;
+  let iconDrag = null;
+
+  function addIcon({id, label, icon, x, y, onOpen}){
+    const el = document.createElement('div');
+    el.className = 'icon';
+    el.dataset.id = id;
+    el.style.left = x + 'px';
+    el.style.top  = y + 'px';
+    el.innerHTML = `
+      <img class="ico" src="${icon}" width="32" height="32" />
+      <div class="label">${escapeHtml(label)}</div>
+    `;
+    el.addEventListener('click', (e)=>{
+      e.stopPropagation();
+      selectIcon(el);
+      hideMenus();
+      hideVolumePopup();
+    });
+    el.addEventListener('dblclick', (e)=>{
+      e.stopPropagation();
+      selectIcon(el);
+      hideMenus();
+      hideVolumePopup();
+      onOpen?.();
+    });
+    el.addEventListener('mousedown', (e)=>{
+      if(e.button !== 0) return;
+      const r = el.getBoundingClientRect();
+      iconDrag = { el, dx: e.clientX - r.left, dy: e.clientY - r.top };
+    });
+    desktop.appendChild(el);
+    return el;
+  }
+
+  function selectIcon(el){
+    if(selectedIconEl) selectedIconEl.classList.remove('selected');
+    selectedIconEl = el;
+    el.classList.add('selected');
+  }
+  function clearIconSelection(){
+    if(selectedIconEl) selectedIconEl.classList.remove('selected');
+    selectedIconEl = null;
+  }
+
+  // selection rectangle (optional feel)
+  desktop.addEventListener('mousedown', (e)=>{
+    if(e.target !== desktop && e.target !== selectBox) return;
+    if(e.button !== 0) return;
+    hideMenus();
+    hideVolumePopup();
+    clearIconSelection();
+
+    const startX = e.clientX;
+    const startY = e.clientY;
+    selectBox.style.left = startX + 'px';
+    selectBox.style.top  = startY + 'px';
+    selectBox.style.width = '0px';
+    selectBox.style.height = '0px';
+    selectBox.style.display = 'block';
+
+    const onMove = (ev)=>{
+      const x1 = Math.min(startX, ev.clientX);
+      const y1 = Math.min(startY, ev.clientY);
+      const x2 = Math.max(startX, ev.clientX);
+      const y2 = Math.max(startY, ev.clientY);
+      selectBox.style.left = x1 + 'px';
+      selectBox.style.top  = y1 + 'px';
+      selectBox.style.width = (x2-x1) + 'px';
+      selectBox.style.height = (y2-y1) + 'px';
+    };
+    const onUp = ()=>{
+      selectBox.style.display = 'none';
+      window.removeEventListener('mousemove', onMove);
+      window.removeEventListener('mouseup', onUp);
+    };
+    window.addEventListener('mousemove', onMove);
+    window.addEventListener('mouseup', onUp);
+  });
+
+  // --------- Windows system ----------
+  let zTop = 200;
+  let winIdSeq = 0;
+  let activeWinId = null;
+  const wins = new Map();
+  let drag = null;
+  let resize = null;
+
+  window.addEventListener('mousemove', (e)=>{
+    if(iconDrag){
+      const d = desktop.getBoundingClientRect();
+      const nx = e.clientX - d.left - iconDrag.dx;
+      const ny = e.clientY - d.top  - iconDrag.dy;
+      iconDrag.el.style.left = Math.max(0, Math.min(nx, d.width-70)) + 'px';
+      iconDrag.el.style.top  = Math.max(0, Math.min(ny, d.height-70)) + 'px';
+    }
+    if(drag){
+      const w = wins.get(drag.id);
+      if(!w || w.maximized) return;
+      const nx = e.clientX - drag.dx;
+      const ny = e.clientY - drag.dy;
+      w.el.style.left = Math.max(0, Math.min(nx, window.innerWidth-40)) + 'px';
+      w.el.style.top  = Math.max(0, Math.min(ny, window.innerHeight-80)) + 'px';
+    }
+    if(resize){
+      const w = wins.get(resize.id);
+      if(!w || w.maximized) return;
+      const dw = e.clientX - resize.startX;
+      const dh = e.clientY - resize.startY;
+      const nw = Math.max(260, resize.startW + dw);
+      const nh = Math.max(180, resize.startH + dh);
+      w.el.style.width = nw + 'px';
+      w.el.style.height = nh + 'px';
+    }
+  });
+  window.addEventListener('mouseup', ()=>{
+    iconDrag = null;
+    drag = null;
+    resize = null;
+  });
+
+  function openWindow({title, w=520, h=360, x=null, y=null, bodyHTML='', status='Ready', canResize=true, toolbar=true, menubar=true}){
+    winIdSeq++;
+    const id = 'w' + winIdSeq;
+
+    const el = document.createElement('div');
+    el.className = 'win';
+    el.dataset.winId = id;
+    el.style.width = w + 'px';
+    el.style.height = h + 'px';
+    el.style.left = (x ?? (80 + (winIdSeq*16)%260)) + 'px';
+    el.style.top  = (y ?? (50 + (winIdSeq*14)%180)) + 'px';
+    el.style.zIndex = (++zTop);
+
+    el.innerHTML = `
+      <div class="titlebar">
+        <img src="${ICONS.win}" width="16" height="16" style="image-rendering:pixelated" />
+        <div class="title">${escapeHtml(title)}</div>
+        <div class="wbtns">
+          <div class="wbtn bevel-out-1" data-btn="min">_</div>
+          <div class="wbtn bevel-out-1" data-btn="max">▢</div>
+          <div class="wbtn bevel-out-1" data-btn="close">×</div>
+        </div>
+      </div>
+      ${menubar ? `
+        <div class="menubar">
+          <div class="m">File</div><div class="m">Edit</div><div class="m">View</div><div class="m">Help</div>
+        </div>` : `<div style="height:0"></div>`}
+      ${toolbar ? `
+        <div class="toolbar">
+          <div class="toolBtn">Back</div>
+          <div class="toolBtn">Forward</div>
+          <div class="toolBtn">Up</div>
+          <div class="toolBtn">Search</div>
+        </div>` : `<div style="height:0"></div>`}
+      <div class="content bevel-in">${bodyHTML}</div>
+      <div class="status">${escapeHtml(status)}</div>
+      ${canResize ? `<div class="resizer" data-resize="1"></div>` : ``}
+    `;
+
+    desktop.appendChild(el);
+
+    const tbtn = document.createElement('div');
+    tbtn.className = 'taskBtn bevel-out';
+    tbtn.dataset.winId = id;
+    tbtn.innerHTML = `<img src="${ICONS.win}" width="16" height="16" style="image-rendering:pixelated" /> <span>${escapeHtml(title)}</span>`;
+    taskBtns.appendChild(tbtn);
+
+    const winObj = {
+      id, el, title,
+      taskBtn: tbtn,
+      minimized:false,
+      maximized:false,
+      restore:{ x: el.style.left, y: el.style.top, w: el.style.width, h: el.style.height }
+    };
+    wins.set(id, winObj);
+    focusWin(id);
+
+    el.addEventListener('mousedown', ()=>focusWin(id));
+
+    const tb = el.querySelector('.titlebar');
+    tb.addEventListener('mousedown', (e)=>{
+      if(e.target.closest('.wbtn')) return;
+      focusWin(id);
+      const r = el.getBoundingClientRect();
+      drag = { id, dx: e.clientX - r.left, dy: e.clientY - r.top };
+    });
+
+    const rz = el.querySelector('[data-resize]');
+    if(rz){
+      rz.addEventListener('mousedown', (e)=>{
+        e.stopPropagation();
+        focusWin(id);
+        const r = el.getBoundingClientRect();
+        resize = { id, startW:r.width, startH:r.height, startX:e.clientX, startY:e.clientY };
+      });
+    }
+
+    el.addEventListener('click', (e)=>{
+      const b = e.target.closest('.wbtn');
+      if(!b) return;
+      const action = b.dataset.btn;
+      if(action === 'close') closeWin(id);
+      if(action === 'min') minimizeWin(id);
+      if(action === 'max') toggleMax(id);
+    });
+
+    tbtn.addEventListener('click', ()=>{
+      const w = wins.get(id);
+      if(!w) return;
+      if(w.minimized){
+        restoreWin(id);
+      }else{
+        if(activeWinId === id) minimizeWin(id);
+        else focusWin(id);
+      }
+    });
+
+    beep(880,60);
+    return id;
+  }
+
+  function focusWin(id){
+    const w = wins.get(id);
+    if(!w) return;
+    activeWinId = id;
+    w.el.style.zIndex = (++zTop);
+    for(const [wid, obj] of wins){
+      obj.el.classList.toggle('inactive', wid !== id);
+      obj.taskBtn.classList.toggle('active', wid === id);
+    }
+  }
+
+  function closeWin(id){
+    const w = wins.get(id);
+    if(!w) return;
+    w.el.remove();
+    w.taskBtn.remove();
+    wins.delete(id);
+    const last = [...wins.keys()].pop();
+    if(last) focusWin(last);
+    beep(520,70);
+  }
+
+  function minimizeWin(id){
+    const w = wins.get(id);
+    if(!w) return;
+    w.el.style.display = 'none';
+    w.minimized = true;
+    w.taskBtn.classList.remove('active');
+    activeWinId = null;
+    beep(440,60);
+  }
+
+  function restoreWin(id){
+    const w = wins.get(id);
+    if(!w) return;
+    w.el.style.display = 'block';
+    w.minimized = false;
+    focusWin(id);
+    beep(660,60);
+  }
+
+  function toggleMax(id){
+    const w = wins.get(id);
+    if(!w) return;
+    const d = desktop.getBoundingClientRect();
+    if(!w.maximized){
+      w.restore = { x:w.el.style.left, y:w.el.style.top, w:w.el.style.width, h:w.el.style.height };
+      w.el.style.left = '0px';
+      w.el.style.top  = '0px';
+      w.el.style.width  = (d.width) + 'px';
+      w.el.style.height = (d.height) + 'px';
+      w.maximized = true;
+    }else{
+      w.el.style.left = w.restore.x;
+      w.el.style.top  = w.restore.y;
+      w.el.style.width  = w.restore.w;
+      w.el.style.height = w.restore.h;
+      w.maximized = false;
+    }
+    focusWin(id);
+    beep(740,70);
+  }
+
+  function toast(title, msg){
+    openWindow({
+      title,
+      w:360, h:170,
+      toolbar:false, menubar:false, canResize:false,
+      bodyHTML: `
+        <div class="dlgBody">${escapeHtml(msg)}</div>
+        <div class="dlgBtns">
+          <button class="btn98 bevel-out" onclick="window.__W98.closeTop()">OK</button>
+        </div>
+      `,
+      status:""
+    });
+  }
+
+  function fakeError(){
+    openWindow({
+      title:"System",
+      w:520, h:210,
+      toolbar:false, menubar:false, canResize:false,
+      bodyHTML: `
+        <div class="dlgBody">
+          <div style="display:flex; gap:12px; align-items:flex-start;">
+            <div style="font-size:28px; line-height:28px;">❌</div>
+            <div>A fatal exception 0E has occurred at 0028:C0011E36 in VXD VMM(01) + 00010E36.</div>
+          </div>
+        </div>
+        <div class="dlgBtns">
+          <button class="btn98 bevel-out" onclick="window.__W98.closeTop()">OK</button>
+        </div>
+      `,
+      status:""
+    });
+    beep(520,120);
+  }
+
+  function newFolder(){
+    const n = Math.floor(Math.random()*900)+100;
+    addIcon({
+      id:"folder"+n,
+      label:"New Folder",
+      icon:ICONS.folder,
+      x:140 + (n%240),
+      y:16 + (n%260),
+      onOpen: ()=>toast("New Folder","Folder opened (fake).")
+    });
+    beep(660,70);
+  }
+
+  function explorerBody(){
+    return `
+      <div style="padding:10px; font-size:12px;">
+        <b>My Computer</b><br><br>
+        (Demo) Double-click desktop icons. Start menu works. Volume icon works.
+      </div>
+    `;
+  }
+
+  function openMyComputer(){
+    openWindow({ title:"My Computer", w:640, h:420, bodyHTML: explorerBody(), status:"Ready" });
+  }
+  function openRecycleBin(){
+    openWindow({
+      title:"Recycle Bin",
+      w:520, h:320,
+      toolbar:false, menubar:false,
+      bodyHTML: `
+        <div class="dlgBody">
+          <div style="display:flex; gap:12px; align-items:flex-start;">
+            <img src="${ICONS.bin}" width="32" height="32" style="image-rendering:pixelated" />
+            <div>
+              <div style="font-weight:bold; margin-bottom:6px;">Recycle Bin</div>
+              <div style="font-family:var(--mono);">Empty.</div>
+            </div>
+          </div>
+        </div>
+        <div class="dlgBtns">
+          <button class="btn98 bevel-out" onclick="window.__W98.closeTop()">Close</button>
+        </div>
+      `,
+      status:"0 item(s)"
+    });
+  }
+  function openReadme(){
+    openWindow({
+      title:"README.TXT - Notepad",
+      w:560, h:420,
+      toolbar:false,
+      bodyHTML: `
+        <div style="padding:10px; font-family:var(--mono); font-size:12px; white-space:pre-wrap;">
+FILES (same folder):
+- windows98.html
+- win98start.jpg
+- win98.ogv
+
+Tray:
+- Click speaker for volume popup (slider + mute).
+
+Start:
+- Shut Down… shows orange safe-to-turn-off screen.
+        </div>
+      `,
+      status:"Line 1, Col 1"
+    });
+  }
+  function openIE(){
+    openWindow({
+      title:"Microsoft Internet Explorer",
+      w:720, h:460,
+      bodyHTML: `
+        <div style="padding:10px;">
+          <div class="bevel-in" style="padding:6px; font-size:12px;">
+            Address: <span style="font-family:var(--mono)">http://</span>
+          </div>
+          <div style="margin-top:10px;" class="bevel-in">
+            <div style="padding:10px; font-size:12px;">
+              <b>Internet Explorer</b><br><br>
+              Vibes only. No real browsing.
+            </div>
+          </div>
+        </div>
+      `,
+      status:"Done",
+      toolbar:true, menubar:true
+    });
+  }
+
+  function handleAction(action){
+    if(!action) return;
+    const [type, arg] = action.split(':');
+    if(type === 'open'){
+      if(arg === 'settings') toast("Settings","No real settings here.");
+      if(arg === 'properties') toast("Display Properties","This is a simulator.");
+      if(arg === 'help') toast("Help","Use Start → Shut Down…");
+      if(arg === 'run') toast("Run","Not implemented.");
+      if(arg === 'notepad') openReadme();
+      if(arg === 'calc') toast("Calculator","Not installed.");
+      if(arg === 'paint') toast("Paint","Not installed.");
+      if(arg === 'ie') openIE();
+      if(arg === 'dos') toast("MS-DOS Prompt","C:\\>");
+      return;
+    }
+    if(action === 'refresh'){ beep(740,60); toast("Windows","Refreshed."); return; }
+    if(action === 'newfolder'){ newFolder(); return; }
+    if(action === 'error'){ fakeError(); return; }
+    if(action === 'scanlines'){ scanlines.classList.toggle('on'); beep(600,70); return; }
+    if(action === 'shutdown'){ shutdownSequence(); return; }
+    if(action === 'toast'){ toast("Windows","OK"); return; }
+  }
+
+  startMenu.addEventListener('click', (e)=>{
+    const it = e.target.closest('.menuItem');
+    if(!it) return;
+    const action = it.dataset.action;
+    if(action && !it.dataset.sub) { hideMenus(); handleAction(action); }
+  });
+  subMenu.addEventListener('click', (e)=>{
+    const it = e.target.closest('.menuItem');
+    if(!it) return;
+    const action = it.dataset.action;
+    if(action && !it.dataset.sub) { hideMenus(); handleAction(action); }
+  });
+  rcMenu.addEventListener('click', (e)=>{
+    const it = e.target.closest('.menuItem');
+    if(!it) return;
+    const action = it.dataset.action;
+    hideMenus();
+    handleAction(action);
+  });
+
+  // --------- BOOT + SHUTDOWN ----------
+  let overlayTimer = null;
+
+  function showBoot(){
+    overlay.classList.add('show');
+    bootScreen.style.display = 'flex';
+    safeScreen.classList.remove('show');
+  }
+  function showSafe(){
+    bootScreen.style.display = 'none';
+    safeScreen.classList.add('show');
+  }
+  function hideOverlay(){
+    overlay.classList.remove('show');
+    bootScreen.style.display = 'flex';
+    safeScreen.classList.remove('show');
+    soundGate.classList.remove('show');
+    if(overlayTimer){ clearTimeout(overlayTimer); overlayTimer = null; }
+  }
+
+  async function tryPlayBootSound(){
+    applyVolume();
+    try{ bootSound.pause(); bootSound.currentTime = 0; }catch{}
+    try{
+      const p = bootSound.play();
+      if(p && typeof p.then === "function") await p;
+      soundGate.classList.remove('show');
+      return true;
+    }catch{
+      soundGate.classList.add('show');
+      return false;
+    }
+  }
+
+  soundGate.addEventListener('click', async (e)=>{
+    e.stopPropagation();
+    await tryPlayBootSound();
+  });
+
+  function bootSequence(){
+    showBoot();
+    tryPlayBootSound();
+    overlayTimer = setTimeout(()=>{ hideOverlay(); }, 2200);
+  }
+
+  function shutdownSequence(){
+    showBoot();
+    overlayTimer = setTimeout(()=>{ showSafe(); }, 900);
+    // stays like real ATX safe screen (until refresh/close)
+  }
+
+  document.addEventListener('keydown', (e)=>{
+    if(e.key === 'Escape' && overlay.classList.contains('show')){
+      hideOverlay();
+      toast("Windows","Boot/Shutdown canceled.");
+    }
+  });
+
+  function closeTop(){
+    let top = null;
+    for(const [id,w] of wins){
+      const z = Number(w.el.style.zIndex)||0;
+      if(!top || z > top.z) top = {id, z};
+    }
+    if(top) closeWin(top.id);
+  }
+
+  window.__W98 = { closeTop };
+
+  function escapeHtml(s){
+    return String(s)
+      .replaceAll('&','&amp;')
+      .replaceAll('<','&lt;')
+      .replaceAll('>','&gt;')
+      .replaceAll('"','&quot;')
+      .replaceAll("'","&#039;");
+  }
+
+  // create desktop icons
+  addIcon({ id:"mycomputer", label:"My Computer", icon:ICONS.computer, x:16, y:16, onOpen: openMyComputer });
+  addIcon({ id:"recycle", label:"Recycle Bin", icon:ICONS.bin, x:16, y:104, onOpen: openRecycleBin });
+  addIcon({ id:"readme", label:"README.TXT", icon:ICONS.doc, x:16, y:192, onOpen: openReadme });
+  addIcon({ id:"iexplore", label:"Internet", icon:ICONS.ie, x:16, y:280, onOpen: openIE });
+
+  // init volume UI + apply
+  volSlider.value = Math.round(audioState.vol * 100);
+  muteBox.checked = audioState.muted;
+  applyVolume();
+
+  // boot on load
+  bootSequence();
+})();
+</script>
+</body>
+</html>
