@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Windows 98</title>
+<title>Windows 98 (Web)</title>
 <style>
   :root{
     --desk:#008080;
@@ -22,13 +22,9 @@
   }
   *{ box-sizing:border-box; }
   html,body{ height:100%; margin:0; }
-  body{
-    background:var(--desk);
-    font-family:var(--font);
-    overflow:hidden;
-  }
+  body{ background:var(--desk); font-family:var(--font); overflow:hidden; }
 
-  /* ---- classic 98 bevel helpers ---- */
+  /* bevels */
   .bevel-out{
     border-top:2px solid var(--light);
     border-left:2px solid var(--light);
@@ -51,14 +47,13 @@
     background:var(--bar);
   }
 
-  /* ---- desktop ---- */
+  /* desktop */
   #desktop{
     position:relative;
     width:100%;
     height:calc(100% - 32px);
     padding:10px;
   }
-
   .icon{
     position:absolute;
     width:76px;
@@ -84,8 +79,6 @@
     color:var(--selText);
     border:1px dotted #fff;
   }
-
-  /* selection rectangle */
   #selectBox{
     position:absolute;
     border:1px dotted #fff;
@@ -95,7 +88,7 @@
     z-index:5;
   }
 
-  /* ---- taskbar ---- */
+  /* taskbar */
   #taskbar{
     position:fixed;
     left:0; right:0; bottom:0;
@@ -161,7 +154,7 @@
     min-width:56px;
   }
 
-  /* ---- menus ---- */
+  /* menus */
   .menu{
     position:absolute;
     background:var(--menu);
@@ -185,28 +178,12 @@
     gap:14px;
     user-select:none;
   }
-  .menuItem:hover{
-    background:var(--sel);
-    color:var(--selText);
-  }
-  .menuSep{
-    height:1px;
-    background:var(--shadow);
-    margin:2px 3px;
-  }
-  .menuLeft{
-    display:flex;
-    align-items:center;
-    gap:8px;
-    min-width:190px;
-  }
-  .miIco{
-    width:16px; height:16px;
-    image-rendering:pixelated;
-    flex:0 0 auto;
-  }
+  .menuItem:hover{ background:var(--sel); color:var(--selText); }
+  .menuSep{ height:1px; background:var(--shadow); margin:2px 3px; }
+  .menuLeft{ display:flex; align-items:center; gap:8px; min-width:190px; }
+  .miIco{ width:16px; height:16px; image-rendering:pixelated; flex:0 0 auto; }
 
-  /* ---- windows ---- */
+  /* windows */
   .win{
     position:absolute;
     background:var(--bar);
@@ -258,10 +235,7 @@
     border-bottom:1px solid #b6b6b6;
     user-select:none;
   }
-  .menubar .m{
-    padding:1px 4px;
-    cursor:default;
-  }
+  .menubar .m{ padding:1px 4px; cursor:default; }
   .menubar .m:hover{ outline:1px dotted #000; }
   .toolbar{
     display:flex;
@@ -279,10 +253,7 @@
     padding:2px 6px;
     cursor:pointer;
   }
-  .toolBtn:hover{
-    outline:1px dotted #000;
-    background:#efefef;
-  }
+  .toolBtn:hover{ outline:1px dotted #000; background:#efefef; }
   .content{
     background:#fff;
     padding:0;
@@ -299,10 +270,8 @@
   }
   .resizer{
     position:absolute;
-    right:2px;
-    bottom:2px;
-    width:14px;
-    height:14px;
+    right:2px; bottom:2px;
+    width:14px; height:14px;
     cursor:nwse-resize;
     background:
       linear-gradient(135deg, transparent 55%, #9c9c9c 55%, #9c9c9c 60%, transparent 60%) ,
@@ -311,7 +280,7 @@
     opacity:.7;
   }
 
-  /* dialogs */
+  /* dialog */
   .dlgBody{ padding:12px; font-size:12px; }
   .dlgBtns{
     display:flex;
@@ -328,7 +297,7 @@
     user-select:none;
   }
 
-  /* ===== REAL Win98 splash + safe-to-shutdown ===== */
+  /* boot overlay */
   #overlay{
     position:fixed;
     inset:0;
@@ -339,7 +308,6 @@
     z-index:100000;
   }
   #overlay.show{ display:flex; }
-
   #bootScreen{
     width:100%;
     height:100%;
@@ -351,7 +319,7 @@
   #bootSplash{
     width:100vw;
     height:100vh;
-    object-fit:contain; /* like real splash */
+    object-fit:contain;
   }
   #soundGate{
     position:absolute;
@@ -369,7 +337,6 @@
     cursor:pointer;
   }
   #soundGate.show{ display:block; }
-
   #safeScreen{
     display:none;
     width:100%;
@@ -384,7 +351,27 @@
   }
   #safeScreen.show{ display:flex; }
 
-  /* ===== Win98 tray volume popup ===== */
+  /* BSOD overlay */
+  #bsod{
+    position:fixed;
+    inset:0;
+    background:#0000aa;
+    color:#fff;
+    font-family:var(--mono);
+    font-size:14px;
+    line-height:1.4;
+    padding:24px;
+    display:none;
+    z-index:200000;
+  }
+  #bsod.show{ display:block; }
+  #bsod .box{
+    max-width:920px;
+    margin:0 auto;
+    white-space:pre-wrap;
+  }
+
+  /* volume popup */
   #volPopup{
     position:absolute;
     right:6px;
@@ -394,19 +381,9 @@
     z-index:30000;
   }
   #volPopup.hidden{ display:none; }
-  #volTitle{
-    font-size:12px;
-    margin:2px 0 6px;
-    user-select:none;
-  }
-  #volRow{
-    display:flex;
-    align-items:center;
-    gap:8px;
-  }
-  #volSlider{
-    width:100%;
-  }
+  #volTitle{ font-size:12px; margin:2px 0 6px; user-select:none; }
+  #volRow{ display:flex; align-items:center; gap:8px; }
+  #volSlider{ width:100%; }
   #muteRow{
     display:flex;
     align-items:center;
@@ -439,28 +416,25 @@
   <div id="selectBox"></div>
 </div>
 
-<!-- Start Menu -->
 <div id="startMenu" class="menu hidden"></div>
 <div id="subMenu" class="menu hidden"></div>
-
-<!-- Right click menu -->
 <div id="rcMenu" class="menu hidden"></div>
 
-<!-- Overlay (BOOT + SAFE) -->
 <div id="overlay">
   <div id="bootScreen">
     <img id="bootSplash" src="win98start.jpg" alt="Windows 98 Startup" />
     <div id="soundGate" class="bevel-out-1">CLICK TO ENABLE SOUND</div>
     <video id="bootSound" src="win98.ogv" preload="auto" playsinline></video>
   </div>
-  <div id="safeScreen">
-    It is now safe to turn off your computer.
-  </div>
+  <div id="safeScreen">It is now safe to turn off your computer.</div>
+</div>
+
+<div id="bsod">
+  <div class="box" id="bsodText"></div>
 </div>
 
 <div id="scanlines"></div>
 
-<!-- Taskbar -->
 <div id="taskbar">
   <div id="startBtn" class="bevel-out">
     <div id="startIco" style="width:16px;height:16px; image-rendering:pixelated;"></div>
@@ -475,7 +449,6 @@
 
     <div id="clock" class="bevel-in">00:00</div>
 
-    <!-- volume popup -->
     <div id="volPopup" class="bevel-out hidden">
       <div id="volTitle"><b>Volume</b></div>
       <div id="volRow">
@@ -508,7 +481,9 @@
   const bootSound = document.getElementById('bootSound');
   const soundGate = document.getElementById('soundGate');
 
-  // volume UI
+  const bsod = document.getElementById('bsod');
+  const bsodText = document.getElementById('bsodText');
+
   const trayIco = document.getElementById('trayIco');
   const volPopup = document.getElementById('volPopup');
   const volSlider = document.getElementById('volSlider');
@@ -516,19 +491,32 @@
 
   // master volume state
   const audioState = {
-    vol: 0.30,     // 0..1
+    vol: 0.30,
     muted: false
   };
 
-  // keep bootSound synced with master volume
+  function clamp(x,a,b){ return Math.max(a, Math.min(b,x)); }
+
   function applyVolume(){
     const v = audioState.muted ? 0 : audioState.vol;
     bootSound.volume = clamp(v, 0, 1);
-    // update tray icon look
     trayIco.textContent = (v === 0) ? "🔇" : "🔊";
   }
 
-  function clamp(x,a,b){ return Math.max(a, Math.min(b,x)); }
+  function beep(freq=880, ms=110, type="square"){
+    const vol = audioState.muted ? 0 : audioState.vol;
+    if(vol <= 0) return;
+    try{
+      const ctx = new (window.AudioContext||window.webkitAudioContext)();
+      const o = ctx.createOscillator();
+      const g = ctx.createGain();
+      o.type = type; o.frequency.value = freq;
+      g.gain.value = 0.12 * vol;
+      o.connect(g); g.connect(ctx.destination);
+      o.start();
+      setTimeout(()=>{ o.stop(); ctx.close(); }, ms);
+    }catch{}
+  }
 
   function svgData(svg){
     const s = svg.replace(/\n/g,'').replace(/\t/g,'').trim();
@@ -614,27 +602,11 @@
       </svg>`)
   };
 
-  // Start icon
+  // start icon
   const startIco = document.getElementById('startIco');
   startIco.innerHTML = `<img src="${ICONS.win}" width="16" height="16" style="image-rendering:pixelated" />`;
 
-  // --------- Sound helpers (volume controlled) ----------
-  function beep(freq=880, ms=110, type="square"){
-    const vol = audioState.muted ? 0 : audioState.vol;
-    if(vol <= 0) return;
-    try{
-      const ctx = new (window.AudioContext||window.webkitAudioContext)();
-      const o = ctx.createOscillator();
-      const g = ctx.createGain();
-      o.type = type; o.frequency.value = freq;
-      g.gain.value = 0.12 * vol; // scale with slider
-      o.connect(g); g.connect(ctx.destination);
-      o.start();
-      setTimeout(()=>{ o.stop(); ctx.close(); }, ms);
-    }catch{}
-  }
-
-  // --------- Clock ----------
+  // clock
   function updateClock(){
     const d = new Date();
     const hh = String(d.getHours()).padStart(2,'0');
@@ -643,7 +615,7 @@
   }
   updateClock(); setInterval(updateClock, 1000);
 
-  // --------- Menus ----------
+  // menus
   function hideMenus(){
     startMenu.classList.add('hidden');
     subMenu.classList.add('hidden');
@@ -685,7 +657,6 @@
         e.stopPropagation();
         if(it.sub) return;
         hideMenus();
-        it.onClick?.();
         if(it.action) handleAction(it.action);
       });
       el.appendChild(row);
@@ -695,8 +666,6 @@
   const programsSub = [
     { label:"Accessories", icon:ICONS.folder, sub:[
       { label:"Notepad", icon:ICONS.doc, action:"open:notepad" },
-      { label:"Calculator", icon:ICONS.doc, action:"open:calc" },
-      { label:"Paint", icon:ICONS.doc, action:"open:paint" },
     ]},
     { label:"Internet Explorer", icon:ICONS.ie, action:"open:ie" },
     { sep:true },
@@ -716,15 +685,10 @@
   setMenu(startMenu, startItems);
 
   const rcItems = [
-    { label:"Arrange Icons", icon:ICONS.folder, action:"toast:arrange" },
     { label:"Refresh", icon:ICONS.doc, action:"refresh" },
     { sep:true },
-    { label:"New → Folder", icon:ICONS.folder, action:"newfolder" },
-    { sep:true },
     { label:"Display → Scanlines", icon:ICONS.gear, action:"scanlines" },
-    { label:"Fake Error", icon:ICONS.doc, action:"error" },
-    { sep:true },
-    { label:"Properties", icon:ICONS.gear, action:"open:properties" },
+    { label:"BSOD", icon:ICONS.doc, action:"bsod" },
   ];
   setMenu(rcMenu, rcItems);
 
@@ -738,6 +702,13 @@
     startMenu.classList.remove('hidden');
     beep(660,80);
   });
+
+  function hideVolumePopup(){ volPopup.classList.add('hidden'); }
+  function showVolumePopup(){
+    volPopup.classList.remove('hidden');
+    volSlider.value = Math.round(audioState.vol * 100);
+    muteBox.checked = audioState.muted;
+  }
 
   document.addEventListener('click', ()=>{
     hideMenus();
@@ -753,19 +724,9 @@
     rcMenu.classList.remove('hidden');
   });
 
-  // --------- Volume popup ----------
-  function showVolumePopup(){
-    volPopup.classList.remove('hidden');
-    // sync UI
-    volSlider.value = Math.round(audioState.vol * 100);
-    muteBox.checked = audioState.muted;
-  }
-  function hideVolumePopup(){
-    volPopup.classList.add('hidden');
-  }
+  // volume popup
   trayIco.addEventListener('click', (e)=>{
     e.stopPropagation();
-    // toggle popup
     if(volPopup.classList.contains('hidden')) showVolumePopup();
     else hideVolumePopup();
     beep(740,70);
@@ -782,7 +743,7 @@
     applyVolume();
   });
 
-  // --------- Desktop icons ----------
+  // desktop icons
   let selectedIconEl = null;
   let iconDrag = null;
 
@@ -828,7 +789,7 @@
     selectedIconEl = null;
   }
 
-  // selection rectangle (optional feel)
+  // selection rectangle
   desktop.addEventListener('mousedown', (e)=>{
     if(e.target !== desktop && e.target !== selectBox) return;
     if(e.button !== 0) return;
@@ -863,14 +824,7 @@
     window.addEventListener('mouseup', onUp);
   });
 
-  // --------- Windows system ----------
-  let zTop = 200;
-  let winIdSeq = 0;
-  let activeWinId = null;
-  const wins = new Map();
-  let drag = null;
-  let resize = null;
-
+  // dragging windows/icons
   window.addEventListener('mousemove', (e)=>{
     if(iconDrag){
       const d = desktop.getBoundingClientRect();
@@ -903,6 +857,14 @@
     drag = null;
     resize = null;
   });
+
+  // windows system
+  let zTop = 200;
+  let winIdSeq = 0;
+  let activeWinId = null;
+  const wins = new Map();
+  let drag = null;
+  let resize = null;
 
   function openWindow({title, w=520, h=360, x=null, y=null, bodyHTML='', status='Ready', canResize=true, toolbar=true, menubar=true}){
     winIdSeq++;
@@ -1026,7 +988,6 @@
     if(last) focusWin(last);
     beep(520,70);
   }
-
   function minimizeWin(id){
     const w = wins.get(id);
     if(!w) return;
@@ -1036,7 +997,6 @@
     activeWinId = null;
     beep(440,60);
   }
-
   function restoreWin(id){
     const w = wins.get(id);
     if(!w) return;
@@ -1045,7 +1005,6 @@
     focusWin(id);
     beep(660,60);
   }
-
   function toggleMax(id){
     const w = wins.get(id);
     if(!w) return;
@@ -1068,10 +1027,21 @@
     beep(740,70);
   }
 
+  function closeTop(){
+    let top = null;
+    for(const [id,w] of wins){
+      const z = Number(w.el.style.zIndex)||0;
+      if(!top || z > top.z) top = {id, z};
+    }
+    if(top) closeWin(top.id);
+  }
+  window.__W98 = { closeTop };
+
+  // apps
   function toast(title, msg){
     openWindow({
       title,
-      w:360, h:170,
+      w:380, h:170,
       toolbar:false, menubar:false, canResize:false,
       bodyHTML: `
         <div class="dlgBody">${escapeHtml(msg)}</div>
@@ -1083,52 +1053,78 @@
     });
   }
 
-  function fakeError(){
+  function openNotepad(){
     openWindow({
-      title:"System",
-      w:520, h:210,
-      toolbar:false, menubar:false, canResize:false,
+      title:"README.TXT - Notepad",
+      w:560, h:420,
+      toolbar:false,
       bodyHTML: `
-        <div class="dlgBody">
-          <div style="display:flex; gap:12px; align-items:flex-start;">
-            <div style="font-size:28px; line-height:28px;">❌</div>
-            <div>A fatal exception 0E has occurred at 0028:C0011E36 in VXD VMM(01) + 00010E36.</div>
+        <div style="padding:10px; font-family:var(--mono); font-size:12px; white-space:pre-wrap;">
+Try Run (Start → Run… or Win+R):
+
+winver  → Windows version dialog
+bsod    → Blue screen
+notepad → this
+cmd     → fake DOS prompt
+iexplore→ fake Internet Explorer
+        </div>
+      `,
+      status:"Line 1, Col 1"
+    });
+  }
+
+  function openIE(){
+    openWindow({
+      title:"Microsoft Internet Explorer",
+      w:720, h:460,
+      bodyHTML: `
+        <div style="padding:10px;">
+          <div class="bevel-in" style="padding:6px; font-size:12px;">
+            Address: <span style="font-family:var(--mono)">http://</span>
+          </div>
+          <div style="margin-top:10px;" class="bevel-in">
+            <div style="padding:10px; font-size:12px;">
+              <b>Internet Explorer</b><br><br>
+              (demo)
+            </div>
           </div>
         </div>
-        <div class="dlgBtns">
-          <button class="btn98 bevel-out" onclick="window.__W98.closeTop()">OK</button>
+      `,
+      status:"Done"
+    });
+  }
+
+  function openDOS(){
+    openWindow({
+      title:"MS-DOS Prompt",
+      w:640, h:380,
+      toolbar:false, menubar:false,
+      bodyHTML: `
+        <div style="padding:10px; font-family:var(--mono); font-size:12px; white-space:pre-wrap;">
+Microsoft(R) Windows 98
+   (C)Copyright Microsoft Corp 1981-1998.
+
+C:\\>_
         </div>
       `,
       status:""
     });
-    beep(520,120);
-  }
-
-  function newFolder(){
-    const n = Math.floor(Math.random()*900)+100;
-    addIcon({
-      id:"folder"+n,
-      label:"New Folder",
-      icon:ICONS.folder,
-      x:140 + (n%240),
-      y:16 + (n%260),
-      onOpen: ()=>toast("New Folder","Folder opened (fake).")
-    });
-    beep(660,70);
-  }
-
-  function explorerBody(){
-    return `
-      <div style="padding:10px; font-size:12px;">
-        <b>My Computer</b><br><br>
-        (Demo) Double-click desktop icons. Start menu works. Volume icon works.
-      </div>
-    `;
   }
 
   function openMyComputer(){
-    openWindow({ title:"My Computer", w:640, h:420, bodyHTML: explorerBody(), status:"Ready" });
+    openWindow({
+      title:"My Computer",
+      w:640, h:420,
+      bodyHTML: `
+        <div style="padding:10px; font-size:12px;">
+          <b>My Computer</b><br><br>
+          (Demo) Use Start → Run… to open winver/bsod/cmd.
+        </div>
+      `,
+      status:"Ready"
+    });
   }
+
   function openRecycleBin(){
     openWindow({
       title:"Recycle Bin",
@@ -1151,94 +1147,142 @@
       status:"0 item(s)"
     });
   }
-  function openReadme(){
-    openWindow({
-      title:"README.TXT - Notepad",
-      w:560, h:420,
-      toolbar:false,
-      bodyHTML: `
-        <div style="padding:10px; font-family:var(--mono); font-size:12px; white-space:pre-wrap;">
-FILES (same folder):
-- windows98.html
-- win98start.jpg
-- win98.ogv
 
-Tray:
-- Click speaker for volume popup (slider + mute).
-
-Start:
-- Shut Down… shows orange safe-to-turn-off screen.
-        </div>
-      `,
-      status:"Line 1, Col 1"
-    });
-  }
-  function openIE(){
+  function openWinver(){
     openWindow({
-      title:"Microsoft Internet Explorer",
-      w:720, h:460,
+      title:"Windows",
+      w:460, h:260,
+      toolbar:false, menubar:false, canResize:false,
       bodyHTML: `
-        <div style="padding:10px;">
-          <div class="bevel-in" style="padding:6px; font-size:12px;">
-            Address: <span style="font-family:var(--mono)">http://</span>
-          </div>
-          <div style="margin-top:10px;" class="bevel-in">
-            <div style="padding:10px; font-size:12px;">
-              <b>Internet Explorer</b><br><br>
-              Vibes only. No real browsing.
+        <div class="dlgBody">
+          <div style="display:flex; gap:12px; align-items:flex-start;">
+            <img src="${ICONS.win}" width="32" height="32" style="image-rendering:pixelated" />
+            <div>
+              <div style="font-weight:bold; margin-bottom:6px;">Microsoft Windows</div>
+              <div>Windows 98</div>
+              <div style="margin-top:10px; font-family:var(--mono); font-size:12px;">
+                Version 4.10.1998<br>
+                (Web Simulation)
+              </div>
+              <div style="margin-top:10px;">
+                This product is licensed to:<br>
+                <b>Windows7Microsoft662</b>
+              </div>
             </div>
           </div>
         </div>
+        <div class="dlgBtns">
+          <button class="btn98 bevel-out" onclick="window.__W98.closeTop()">OK</button>
+        </div>
       `,
-      status:"Done",
-      toolbar:true, menubar:true
+      status:""
     });
   }
 
-  function handleAction(action){
-    if(!action) return;
-    const [type, arg] = action.split(':');
-    if(type === 'open'){
-      if(arg === 'settings') toast("Settings","No real settings here.");
-      if(arg === 'properties') toast("Display Properties","This is a simulator.");
-      if(arg === 'help') toast("Help","Use Start → Shut Down…");
-      if(arg === 'run') toast("Run","Not implemented.");
-      if(arg === 'notepad') openReadme();
-      if(arg === 'calc') toast("Calculator","Not installed.");
-      if(arg === 'paint') toast("Paint","Not installed.");
-      if(arg === 'ie') openIE();
-      if(arg === 'dos') toast("MS-DOS Prompt","C:\\>");
+  // RUN dialog + command router
+  let runWinId = null;
+
+  function openRun(){
+    // avoid opening 50 run windows
+    if(runWinId && wins.get(runWinId)){
+      restoreWin(runWinId);
+      focusWin(runWinId);
+      const inp = document.getElementById('runInput');
+      if(inp) inp.focus();
       return;
     }
-    if(action === 'refresh'){ beep(740,60); toast("Windows","Refreshed."); return; }
-    if(action === 'newfolder'){ newFolder(); return; }
-    if(action === 'error'){ fakeError(); return; }
-    if(action === 'scanlines'){ scanlines.classList.toggle('on'); beep(600,70); return; }
-    if(action === 'shutdown'){ shutdownSequence(); return; }
-    if(action === 'toast'){ toast("Windows","OK"); return; }
+    runWinId = openWindow({
+      title:"Run",
+      w:440, h:190,
+      toolbar:false, menubar:false, canResize:false,
+      bodyHTML: `
+        <div class="dlgBody">
+          <div style="display:flex; gap:12px; align-items:flex-start;">
+            <img src="${ICONS.doc}" width="32" height="32" style="image-rendering:pixelated" />
+            <div style="flex:1;">
+              <div style="margin-bottom:6px;">
+                Type the name of a program, folder, or document, and Windows will open it for you.
+              </div>
+              <input id="runInput" class="bevel-in"
+                     style="width:100%; padding:4px; font-family:var(--mono);" />
+            </div>
+          </div>
+        </div>
+        <div class="dlgBtns">
+          <button class="btn98 bevel-out" id="runOkBtn">OK</button>
+          <button class="btn98 bevel-out" id="runCancelBtn">Cancel</button>
+        </div>
+      `,
+      status:""
+    });
+
+    // hook buttons after render
+    setTimeout(() => {
+      const inp = document.getElementById('runInput');
+      const ok = document.getElementById('runOkBtn');
+      const cancel = document.getElementById('runCancelBtn');
+      if(!inp || !ok || !cancel) return;
+
+      inp.focus();
+      inp.addEventListener('keydown', (e)=>{
+        if(e.key === 'Enter') ok.click();
+        if(e.key === 'Escape') cancel.click();
+      });
+
+      ok.onclick = () => {
+        const cmd = (inp.value || '').trim();
+        runCommand(cmd);
+      };
+      cancel.onclick = () => closeWin(runWinId);
+    }, 0);
   }
 
-  startMenu.addEventListener('click', (e)=>{
-    const it = e.target.closest('.menuItem');
-    if(!it) return;
-    const action = it.dataset.action;
-    if(action && !it.dataset.sub) { hideMenus(); handleAction(action); }
-  });
-  subMenu.addEventListener('click', (e)=>{
-    const it = e.target.closest('.menuItem');
-    if(!it) return;
-    const action = it.dataset.action;
-    if(action && !it.dataset.sub) { hideMenus(); handleAction(action); }
-  });
-  rcMenu.addEventListener('click', (e)=>{
-    const it = e.target.closest('.menuItem');
-    if(!it) return;
-    const action = it.dataset.action;
-    hideMenus();
-    handleAction(action);
-  });
+  function runCommand(cmdRaw){
+    const cmd = (cmdRaw || '').trim().toLowerCase();
+    if(!cmd){ beep(520,60); return; }
 
-  // --------- BOOT + SHUTDOWN ----------
+    // close run like real (optional)
+    if(runWinId && wins.get(runWinId)) closeWin(runWinId);
+
+    if(cmd === 'winver') { openWinver(); return; }
+    if(cmd === 'bsod')   { triggerBSOD(); return; }
+    if(cmd === 'cmd' || cmd === 'command.com') { openDOS(); return; }
+    if(cmd === 'notepad') { openNotepad(); return; }
+    if(cmd === 'iexplore' || cmd === 'internet' || cmd === 'ie') { openIE(); return; }
+    if(cmd === 'explorer' || cmd === 'my computer' || cmd === 'mycomputer') { openMyComputer(); return; }
+
+    // unknown
+    toast("Run", `Cannot find '${cmdRaw}'. Make sure the path or file name is correct.`);
+    beep(520,100);
+  }
+
+  // BSOD
+  function triggerBSOD(){
+    hideMenus();
+    hideVolumePopup();
+    // stop boot sound if playing
+    try{ bootSound.pause(); }catch{}
+
+    bsodText.textContent =
+`A fatal exception 0E has occurred at 0028:C0011E36 in VXD VMM(01) + 00010E36.
+The current application will be terminated.
+
+* Press any key to terminate the current application.
+* Press CTRL+ALT+DEL again to restart your computer. You will lose any unsaved information in all applications.
+
+Press any key to continue _`;
+
+    bsod.classList.add('show');
+    beep(220,160,"square");
+  }
+
+  function exitBSOD(){
+    bsod.classList.remove('show');
+    // "reboot" feel: show boot splash quickly again
+    bootSequence();
+  }
+
+  // Boot + shutdown
   let overlayTimer = null;
 
   function showBoot(){
@@ -1271,7 +1315,6 @@ Start:
       return false;
     }
   }
-
   soundGate.addEventListener('click', async (e)=>{
     e.stopPropagation();
     await tryPlayBootSound();
@@ -1286,27 +1329,86 @@ Start:
   function shutdownSequence(){
     showBoot();
     overlayTimer = setTimeout(()=>{ showSafe(); }, 900);
-    // stays like real ATX safe screen (until refresh/close)
   }
 
+  // actions
+  function handleAction(action){
+    if(!action) return;
+    const [type, arg] = action.split(':');
+
+    if(type === 'open'){
+      if(arg === 'settings') toast("Settings","No real settings here.");
+      if(arg === 'help') toast("Help","Try Start → Run… and type: winver / bsod");
+      if(arg === 'run') openRun();
+      if(arg === 'notepad') openNotepad();
+      if(arg === 'ie') openIE();
+      if(arg === 'dos') openDOS();
+      return;
+    }
+
+    if(action === 'refresh'){ beep(740,60); toast("Windows","Refreshed."); return; }
+    if(action === 'scanlines'){ scanlines.classList.toggle('on'); beep(600,70); return; }
+    if(action === 'shutdown'){ shutdownSequence(); return; }
+    if(action === 'bsod'){ triggerBSOD(); return; }
+    if(action === 'toast:docs'){ toast("Documents","No documents."); return; }
+  }
+
+  // keyboard shortcuts:
   document.addEventListener('keydown', (e)=>{
+    // BSOD: any key exits
+    if(bsod.classList.contains('show')){
+      e.preventDefault();
+      exitBSOD();
+      return;
+    }
+
+    // ESC cancels boot overlay
     if(e.key === 'Escape' && overlay.classList.contains('show')){
       hideOverlay();
       toast("Windows","Boot/Shutdown canceled.");
+      return;
+    }
+
+    // Win+R (or Ctrl+R fallback)
+    const isWinR = (e.key.toLowerCase() === 'r') && (e.metaKey || e.ctrlKey);
+    if(isWinR){
+      e.preventDefault();
+      openRun();
     }
   });
 
-  function closeTop(){
-    let top = null;
-    for(const [id,w] of wins){
-      const z = Number(w.el.style.zIndex)||0;
-      if(!top || z > top.z) top = {id, z};
-    }
-    if(top) closeWin(top.id);
-  }
+  // volume init
+  volSlider.value = Math.round(audioState.vol * 100);
+  muteBox.checked = audioState.muted;
+  applyVolume();
 
-  window.__W98 = { closeTop };
+  // create icons
+  addIcon({ id:"mycomputer", label:"My Computer", icon:ICONS.computer, x:16, y:16, onOpen: openMyComputer });
+  addIcon({ id:"recycle", label:"Recycle Bin", icon:ICONS.bin, x:16, y:104, onOpen: openRecycleBin });
+  addIcon({ id:"readme", label:"README.TXT", icon:ICONS.doc, x:16, y:192, onOpen: openNotepad });
+  addIcon({ id:"iexplore", label:"Internet", icon:ICONS.ie, x:16, y:280, onOpen: openIE });
 
+  // start + right-click menus are already set
+  document.addEventListener('click', ()=>{ hideMenus(); hideVolumePopup(); });
+  document.addEventListener('contextmenu', (e)=>{
+    e.preventDefault();
+    hideMenus();
+    hideVolumePopup();
+    rcMenu.style.left = e.clientX + 'px';
+    rcMenu.style.top  = e.clientY + 'px';
+    rcMenu.classList.remove('hidden');
+  });
+
+  // bsod shows: disable context menu pop while bsod up
+  rcMenu.addEventListener('click', (e)=>{
+    const it = e.target.closest('.menuItem');
+    if(!it) return;
+    const action = it.dataset.action;
+    hideMenus();
+    handleAction(action);
+  });
+
+  // helper
   function escapeHtml(s){
     return String(s)
       .replaceAll('&','&amp;')
@@ -1315,17 +1417,6 @@ Start:
       .replaceAll('"','&quot;')
       .replaceAll("'","&#039;");
   }
-
-  // create desktop icons
-  addIcon({ id:"mycomputer", label:"My Computer", icon:ICONS.computer, x:16, y:16, onOpen: openMyComputer });
-  addIcon({ id:"recycle", label:"Recycle Bin", icon:ICONS.bin, x:16, y:104, onOpen: openRecycleBin });
-  addIcon({ id:"readme", label:"README.TXT", icon:ICONS.doc, x:16, y:192, onOpen: openReadme });
-  addIcon({ id:"iexplore", label:"Internet", icon:ICONS.ie, x:16, y:280, onOpen: openIE });
-
-  // init volume UI + apply
-  volSlider.value = Math.round(audioState.vol * 100);
-  muteBox.checked = audioState.muted;
-  applyVolume();
 
   // boot on load
   bootSequence();
