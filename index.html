@@ -1095,19 +1095,44 @@ iexplore→ fake Internet Explorer
   }
 
   function openDOS(){
-    openWindow({
-      title:"MS-DOS Prompt",
-      w:640, h:380,
-      toolbar:false, menubar:false,
-      bodyHTML: `
-        <div style="padding:10px; font-family:var(--mono); font-size:12px; white-space:pre-wrap;">
+  openWindow({
+    title:"MS-DOS Prompt",
+    w:640,
+    h:400,
+    toolbar:false,
+    menubar:false,
+    bodyHTML: `
+      <div id="dosScreen" style="
+        background:black;
+        color:#c0c0c0;
+        height:100%;
+        padding:8px;
+        font-family:Consolas,monospace;
+        font-size:14px;
+        overflow:auto;
+      ">
+        <div id="dosOutput">
 Microsoft(R) Windows 98
-   (C)Copyright Microsoft Corp 1981-1998.
+(C) Copyright Microsoft Corp 1981-1998.
 
 C:\\>_
         </div>
-      `,
-      status:""
+        <input id="dosInput" style="
+          width:100%;
+          background:black;
+          border:none;
+          color:#c0c0c0;
+          outline:none;
+          font-family:inherit;
+        ">
+      </div>
+    `,
+    status:""
+  });
+
+  setTimeout(initDOS,50);
+}
+
     });
   }
 
@@ -1424,3 +1449,199 @@ Press any key to continue _`;
 </script>
 </body>
 </html>
+/* =======================
+   WINDOWS 98 DOS ENGINE
+   ======================= */
+
+let DOS_STATE = {
+  cwd: "C:\\",
+  history: [],
+  histPos: 0
+};
+
+function initDOS(){
+  const input = document.getElementById("dosInput");
+  const output = document.getElementById("dosOutput");
+  const screen = document.getElementById("dosScreen");
+  if(!input || !output) return;
+
+  input.focus();
+
+  input.addEventListener("keydown", (e)=>{
+    // command history
+    if(e.key === "ArrowUp"){
+      if(DOS_STATE.history.length){
+        DOS_STATE.histPos = Math.max(0, DOS_STATE.histPos - 1);
+        input.value = DOS_STATE.history[DOS_STATE.histPos];
+      }
+      e.preventDefault();
+      return;
+    }
+    if(e.key === "ArrowDown"){
+      if(DOS_STATE.history.length){
+        DOS_STATE.histPos = Math.min(DOS_STATE.history.length, DOS_STATE.histPos + 1);
+        input.value = DOS_STATE.history[DOS_STATE.histPos] || "";
+      }
+      e.preventDefault();
+      return;
+    }
+
+    if(e.key !== "Enter") return;
+
+    const raw = input.value;
+    const cmd = raw.trim();
+
+    output.innerHTML += `<br>${DOS_STATE.cwd}>${escapeHtml(cmd)}`;
+    DOS_STATE.history.push(cmd);
+    DOS_STATE.histPos = DOS_STATE.history.length;
+
+    runDOSCommand(cmd, output);
+
+    input.value = "";
+    screen.scrollTop = screen.scrollHeight;
+  });
+}
+
+function runDOSCommand(cmdRaw, out){
+  const cmd = cmdRaw.toLowerCase();
+
+  if(!cmd){
+    out.innerHTML += `<br>${DOS_STATE.cwd}>`;
+    return;
+  }
+
+  /* HELP */
+  if(cmd === "help"){
+    out.innerHTML += `
+<br>
+DIR  CLS  CD  TREE
+VER  MEM  DATE  TIME
+ECHO  COLOR
+WINVER  BSOD
+START NOTEPAD
+START IEXPLORE
+EXIT
+`;
+    return;
+  }
+
+  /* DIR */
+  if(cmd === "dir"){
+    out.innerHTML += `
+<br>
+ Directory of ${DOS_STATE.cwd}
+
+ WINDOWS        <DIR>
+ PROGRAM FILES  <DIR>
+ AUTOEXEC.BAT
+ CONFIG.SYS
+ README.TXT
+`;
+    return;
+  }
+
+  /* CLS */
+  if(cmd === "cls"){
+    out.innerHTML = `${DOS_STATE.cwd}>`;
+    return;
+  }
+
+  /* CD */
+  if(cmd.startsWith("cd")){
+    const arg = cmd.split(" ")[1];
+    if(!arg || arg === "\\"){
+      DOS_STATE.cwd = "C:\\";
+    }else if(arg === ".."){
+      DOS_STATE.cwd = "C:\\";
+    }else{
+      DOS_STATE.cwd = "C:\\" + arg.toUpperCase();
+    }
+    out.innerHTML += `<br>${DOS_STATE.cwd}>`;
+    return;
+  }
+
+  /* TREE */
+  if(cmd === "tree"){
+    out.innerHTML += `
+<br>
+C:.
+├── WINDOWS
+│   ├── SYSTEM
+│   └── COMMAND
+├── PROGRAM FILES
+└── README.TXT
+`;
+    return;
+  }
+
+  /* VER */
+  if(cmd === "ver"){
+    out.innerHTML += `<br>Windows 98 [Version 4.10.1998]`;
+    return;
+  }
+
+  /* MEM */
+  if(cmd === "mem"){
+    out.innerHTML += `
+<br>
+655,360 bytes total conventional memory
+655,360 bytes available
+`;
+    return;
+  }
+
+  /* DATE */
+  if(cmd === "date"){
+    out.innerHTML += `<br>${new Date().toLocaleDateString()}`;
+    return;
+  }
+
+  /* TIME */
+  if(cmd === "time"){
+    out.innerHTML += `<br>${new Date().toLocaleTimeString()}`;
+    return;
+  }
+
+  /* ECHO */
+  if(cmd.startsWith("echo ")){
+    out.innerHTML += `<br>${escapeHtml(cmdRaw.slice(5))}`;
+    return;
+  }
+
+  /* COLOR */
+  if(cmd.startsWith("color")){
+    out.innerHTML += `<br>(color command not supported in this simulator)`;
+    return;
+  }
+
+  /* START */
+  if(cmd === "start notepad"){
+    openNotepad();
+    return;
+  }
+  if(cmd === "start iexplore"){
+    openIE();
+    return;
+  }
+
+  /* WINVER */
+  if(cmd === "winver"){
+    openWinver();
+    return;
+  }
+
+  /* BSOD */
+  if(cmd === "bsod"){
+    triggerBSOD();
+    return;
+  }
+
+  /* EXIT */
+  if(cmd === "exit"){
+    window.__W98.closeTop();
+    return;
+  }
+
+  /* UNKNOWN */
+  out.innerHTML += `<br>Bad command or file name`;
+}
