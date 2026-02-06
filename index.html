@@ -1095,6 +1095,8 @@ iexplore→ fake Internet Explorer
   }
 
   function openDOS(){
+  const sid = "dos_" + Date.now() + "_" + Math.floor(Math.random()*9999);
+
   openWindow({
     title:"MS-DOS Prompt",
     w:640,
@@ -1102,7 +1104,7 @@ iexplore→ fake Internet Explorer
     toolbar:false,
     menubar:false,
     bodyHTML: `
-      <div id="dosScreen" style="
+      <div id="${sid}_screen" style="
         background:black;
         color:#c0c0c0;
         height:100%;
@@ -1111,23 +1113,32 @@ iexplore→ fake Internet Explorer
         font-size:14px;
         overflow:auto;
       ">
-        <div id="dosOutput">
+        <div id="${sid}_output" style="white-space:pre-wrap;">
 Microsoft(R) Windows 98
-(C) Copyright Microsoft Corp 1981-1998.
+(C)Copyright Microsoft Corp 1981-1998.
 
-C:\\>_
+Type HELP for a list of commands.
         </div>
-        <input id="dosInput" style="
-          width:100%;
-          background:black;
-          border:none;
-          color:#c0c0c0;
-          outline:none;
-          font-family:inherit;
-        ">
+
+        <div style="margin-top:6px;">
+          ${escapeHtml("C:\\>")}
+          <input id="${sid}_input" autocomplete="off" spellcheck="false" style="
+            background:black;
+            border:none;
+            color:#c0c0c0;
+            outline:none;
+            font-family:inherit;
+            width:85%;
+          ">
+        </div>
       </div>
     `,
     status:""
+  });
+
+  setTimeout(()=>initDOS(sid), 50);
+}
+
   });
 
   setTimeout(initDOS,50);
@@ -1459,24 +1470,30 @@ let DOS_STATE = {
   histPos: 0
 };
 
-function initDOS(){
-  const input = document.getElementById("dosInput");
-  const output = document.getElementById("dosOutput");
-  const screen = document.getElementById("dosScreen");
-  if(!input || !output) return;
+function initDOS(sid){
+  const input  = document.getElementById(`${sid}_input`);
+  const output = document.getElementById(`${sid}_output`);
+  const screen = document.getElementById(`${sid}_screen`);
+  if(!input || !output || !screen) return;
+
+  // click anywhere in DOS screen to focus input
+  screen.addEventListener("mousedown", ()=>input.focus());
 
   input.focus();
 
+  // reset history pointer
+  DOS_STATE.histPos = DOS_STATE.history.length;
+
   input.addEventListener("keydown", (e)=>{
-    // command history
     if(e.key === "ArrowUp"){
       if(DOS_STATE.history.length){
         DOS_STATE.histPos = Math.max(0, DOS_STATE.histPos - 1);
-        input.value = DOS_STATE.history[DOS_STATE.histPos];
+        input.value = DOS_STATE.history[DOS_STATE.histPos] || "";
       }
       e.preventDefault();
       return;
     }
+
     if(e.key === "ArrowDown"){
       if(DOS_STATE.history.length){
         DOS_STATE.histPos = Math.min(DOS_STATE.history.length, DOS_STATE.histPos + 1);
@@ -1491,7 +1508,7 @@ function initDOS(){
     const raw = input.value;
     const cmd = raw.trim();
 
-    output.innerHTML += `<br>${DOS_STATE.cwd}>${escapeHtml(cmd)}`;
+    output.innerHTML += `<br>${escapeHtml(DOS_STATE.cwd)}>${escapeHtml(cmd)}`;
     DOS_STATE.history.push(cmd);
     DOS_STATE.histPos = DOS_STATE.history.length;
 
@@ -1500,148 +1517,4 @@ function initDOS(){
     input.value = "";
     screen.scrollTop = screen.scrollHeight;
   });
-}
-
-function runDOSCommand(cmdRaw, out){
-  const cmd = cmdRaw.toLowerCase();
-
-  if(!cmd){
-    out.innerHTML += `<br>${DOS_STATE.cwd}>`;
-    return;
-  }
-
-  /* HELP */
-  if(cmd === "help"){
-    out.innerHTML += `
-<br>
-DIR  CLS  CD  TREE
-VER  MEM  DATE  TIME
-ECHO  COLOR
-WINVER  BSOD
-START NOTEPAD
-START IEXPLORE
-EXIT
-`;
-    return;
-  }
-
-  /* DIR */
-  if(cmd === "dir"){
-    out.innerHTML += `
-<br>
- Directory of ${DOS_STATE.cwd}
-
- WINDOWS        <DIR>
- PROGRAM FILES  <DIR>
- AUTOEXEC.BAT
- CONFIG.SYS
- README.TXT
-`;
-    return;
-  }
-
-  /* CLS */
-  if(cmd === "cls"){
-    out.innerHTML = `${DOS_STATE.cwd}>`;
-    return;
-  }
-
-  /* CD */
-  if(cmd.startsWith("cd")){
-    const arg = cmd.split(" ")[1];
-    if(!arg || arg === "\\"){
-      DOS_STATE.cwd = "C:\\";
-    }else if(arg === ".."){
-      DOS_STATE.cwd = "C:\\";
-    }else{
-      DOS_STATE.cwd = "C:\\" + arg.toUpperCase();
-    }
-    out.innerHTML += `<br>${DOS_STATE.cwd}>`;
-    return;
-  }
-
-  /* TREE */
-  if(cmd === "tree"){
-    out.innerHTML += `
-<br>
-C:.
-├── WINDOWS
-│   ├── SYSTEM
-│   └── COMMAND
-├── PROGRAM FILES
-└── README.TXT
-`;
-    return;
-  }
-
-  /* VER */
-  if(cmd === "ver"){
-    out.innerHTML += `<br>Windows 98 [Version 4.10.1998]`;
-    return;
-  }
-
-  /* MEM */
-  if(cmd === "mem"){
-    out.innerHTML += `
-<br>
-655,360 bytes total conventional memory
-655,360 bytes available
-`;
-    return;
-  }
-
-  /* DATE */
-  if(cmd === "date"){
-    out.innerHTML += `<br>${new Date().toLocaleDateString()}`;
-    return;
-  }
-
-  /* TIME */
-  if(cmd === "time"){
-    out.innerHTML += `<br>${new Date().toLocaleTimeString()}`;
-    return;
-  }
-
-  /* ECHO */
-  if(cmd.startsWith("echo ")){
-    out.innerHTML += `<br>${escapeHtml(cmdRaw.slice(5))}`;
-    return;
-  }
-
-  /* COLOR */
-  if(cmd.startsWith("color")){
-    out.innerHTML += `<br>(color command not supported in this simulator)`;
-    return;
-  }
-
-  /* START */
-  if(cmd === "start notepad"){
-    openNotepad();
-    return;
-  }
-  if(cmd === "start iexplore"){
-    openIE();
-    return;
-  }
-
-  /* WINVER */
-  if(cmd === "winver"){
-    openWinver();
-    return;
-  }
-
-  /* BSOD */
-  if(cmd === "bsod"){
-    triggerBSOD();
-    return;
-  }
-
-  /* EXIT */
-  if(cmd === "exit"){
-    window.__W98.closeTop();
-    return;
-  }
-
-  /* UNKNOWN */
-  out.innerHTML += `<br>Bad command or file name`;
 }
