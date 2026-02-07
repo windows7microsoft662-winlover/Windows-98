@@ -24,7 +24,6 @@
   html,body{ height:100%; margin:0; }
   body{ background:var(--desk); font-family:var(--font); overflow:hidden; }
 
-  /* bevels */
   .bevel-out{
     border-top:2px solid var(--light);
     border-left:2px solid var(--light);
@@ -47,7 +46,6 @@
     background:var(--bar);
   }
 
-  /* desktop */
   #desktop{
     position:relative;
     width:100%;
@@ -88,7 +86,6 @@
     z-index:5;
   }
 
-  /* taskbar */
   #taskbar{
     position:fixed;
     left:0; right:0; bottom:0;
@@ -154,7 +151,6 @@
     min-width:56px;
   }
 
-  /* menus */
   .menu{
     position:absolute;
     background:var(--menu);
@@ -183,7 +179,6 @@
   .menuLeft{ display:flex; align-items:center; gap:8px; min-width:190px; }
   .miIco{ width:16px; height:16px; image-rendering:pixelated; flex:0 0 auto; }
 
-  /* windows */
   .win{
     position:absolute;
     background:var(--bar);
@@ -280,7 +275,6 @@
     opacity:.7;
   }
 
-  /* dialog */
   .dlgBody{ padding:12px; font-size:12px; }
   .dlgBtns{
     display:flex;
@@ -297,7 +291,6 @@
     user-select:none;
   }
 
-  /* boot overlay */
   #overlay{
     position:fixed;
     inset:0;
@@ -351,7 +344,6 @@
   }
   #safeScreen.show{ display:flex; }
 
-  /* BSOD overlay */
   #bsod{
     position:fixed;
     inset:0;
@@ -371,7 +363,6 @@
     white-space:pre-wrap;
   }
 
-  /* volume popup */
   #volPopup{
     position:absolute;
     right:6px;
@@ -393,7 +384,6 @@
     user-select:none;
   }
 
-  /* optional scanlines */
   #scanlines{
     position:fixed; inset:0;
     pointer-events:none;
@@ -489,11 +479,18 @@
   const volSlider = document.getElementById('volSlider');
   const muteBox = document.getElementById('muteBox');
 
+  // helper
+  function escapeHtml(s){
+    return String(s)
+      .replaceAll('&','&amp;')
+      .replaceAll('<','&lt;')
+      .replaceAll('>','&gt;')
+      .replaceAll('"','&quot;')
+      .replaceAll("'","&#039;");
+  }
+
   // master volume state
-  const audioState = {
-    vol: 0.30,
-    muted: false
-  };
+  const audioState = { vol: 0.30, muted: false };
 
   function clamp(x,a,b){ return Math.max(a, Math.min(b,x)); }
 
@@ -710,10 +707,7 @@
     muteBox.checked = audioState.muted;
   }
 
-  document.addEventListener('click', ()=>{
-    hideMenus();
-    hideVolumePopup();
-  });
+  document.addEventListener('click', ()=>{ hideMenus(); hideVolumePopup(); });
 
   document.addEventListener('contextmenu', (e)=>{
     e.preventDefault();
@@ -824,7 +818,14 @@
     window.addEventListener('mouseup', onUp);
   });
 
-  // dragging windows/icons
+  // windows system
+  let zTop = 200;
+  let winIdSeq = 0;
+  let activeWinId = null;
+  const wins = new Map();
+  let drag = null;
+  let resize = null;
+
   window.addEventListener('mousemove', (e)=>{
     if(iconDrag){
       const d = desktop.getBoundingClientRect();
@@ -852,19 +853,12 @@
       w.el.style.height = nh + 'px';
     }
   });
+
   window.addEventListener('mouseup', ()=>{
     iconDrag = null;
     drag = null;
     resize = null;
   });
-
-  // windows system
-  let zTop = 200;
-  let winIdSeq = 0;
-  let activeWinId = null;
-  const wins = new Map();
-  let drag = null;
-  let resize = null;
 
   function openWindow({title, w=520, h=360, x=null, y=null, bodyHTML='', status='Ready', canResize=true, toolbar=true, menubar=true}){
     winIdSeq++;
@@ -1065,8 +1059,8 @@ Try Run (Start → Run… or Win+R):
 winver  → Windows version dialog
 bsod    → Blue screen
 notepad → this
-cmd     → fake DOS prompt
-iexplore→ fake Internet Explorer
+cmd     → MS-DOS Prompt
+iexplore→ Internet Explorer
         </div>
       `,
       status:"Line 1, Col 1"
@@ -1094,57 +1088,50 @@ iexplore→ fake Internet Explorer
     });
   }
 
+  // ===== PROPER CMD WINDOW =====
   function openDOS(){
-  const sid = "dos_" + Date.now() + "_" + Math.floor(Math.random()*9999);
+    const sid = "dos_" + Date.now() + "_" + Math.floor(Math.random()*9999);
 
-  openWindow({
-    title:"MS-DOS Prompt",
-    w:640,
-    h:400,
-    toolbar:false,
-    menubar:false,
-    bodyHTML: `
-      <div id="${sid}_screen" style="
-        background:black;
-        color:#c0c0c0;
-        height:100%;
-        padding:8px;
-        font-family:Consolas,monospace;
-        font-size:14px;
-        overflow:auto;
-      ">
-        <div id="${sid}_output" style="white-space:pre-wrap;">
+    openWindow({
+      title:"MS-DOS Prompt",
+      w:640,
+      h:400,
+      toolbar:false,
+      menubar:false,
+      bodyHTML: `
+        <div id="${sid}_screen" style="
+          background:#000;
+          color:#c0c0c0;
+          height:100%;
+          padding:8px;
+          font-family:Consolas,monospace;
+          font-size:14px;
+          overflow:auto;
+        ">
+          <div id="${sid}_output" style="white-space:pre-wrap;">
 Microsoft(R) Windows 98
 (C)Copyright Microsoft Corp 1981-1998.
 
 Type HELP for a list of commands.
+          </div>
+
+          <div style="margin-top:6px;">
+            C:\\&gt;
+            <input id="${sid}_input" autocomplete="off" spellcheck="false" style="
+              background:#000;
+              border:none;
+              color:#c0c0c0;
+              outline:none;
+              font-family:inherit;
+              width:85%;
+            ">
+          </div>
         </div>
-
-        <div style="margin-top:6px;">
-          ${escapeHtml("C:\\>")}
-          <input id="${sid}_input" autocomplete="off" spellcheck="false" style="
-            background:black;
-            border:none;
-            color:#c0c0c0;
-            outline:none;
-            font-family:inherit;
-            width:85%;
-          ">
-        </div>
-      </div>
-    `,
-    status:""
-  });
-
-  setTimeout(()=>initDOS(sid), 50);
-}
-
-  });
-
-  setTimeout(initDOS,50);
-}
-
+      `,
+      status:""
     });
+
+    setTimeout(() => initDOS(sid), 50);
   }
 
   function openMyComputer(){
@@ -1219,7 +1206,6 @@ Type HELP for a list of commands.
   let runWinId = null;
 
   function openRun(){
-    // avoid opening 50 run windows
     if(runWinId && wins.get(runWinId)){
       restoreWin(runWinId);
       focusWin(runWinId);
@@ -1252,7 +1238,6 @@ Type HELP for a list of commands.
       status:""
     });
 
-    // hook buttons after render
     setTimeout(() => {
       const inp = document.getElementById('runInput');
       const ok = document.getElementById('runOkBtn');
@@ -1265,10 +1250,7 @@ Type HELP for a list of commands.
         if(e.key === 'Escape') cancel.click();
       });
 
-      ok.onclick = () => {
-        const cmd = (inp.value || '').trim();
-        runCommand(cmd);
-      };
+      ok.onclick = () => runCommand((inp.value || '').trim());
       cancel.onclick = () => closeWin(runWinId);
     }, 0);
   }
@@ -1277,7 +1259,6 @@ Type HELP for a list of commands.
     const cmd = (cmdRaw || '').trim().toLowerCase();
     if(!cmd){ beep(520,60); return; }
 
-    // close run like real (optional)
     if(runWinId && wins.get(runWinId)) closeWin(runWinId);
 
     if(cmd === 'winver') { openWinver(); return; }
@@ -1287,7 +1268,6 @@ Type HELP for a list of commands.
     if(cmd === 'iexplore' || cmd === 'internet' || cmd === 'ie') { openIE(); return; }
     if(cmd === 'explorer' || cmd === 'my computer' || cmd === 'mycomputer') { openMyComputer(); return; }
 
-    // unknown
     toast("Run", `Cannot find '${cmdRaw}'. Make sure the path or file name is correct.`);
     beep(520,100);
   }
@@ -1296,7 +1276,6 @@ Type HELP for a list of commands.
   function triggerBSOD(){
     hideMenus();
     hideVolumePopup();
-    // stop boot sound if playing
     try{ bootSound.pause(); }catch{}
 
     bsodText.textContent =
@@ -1314,7 +1293,6 @@ Press any key to continue _`;
 
   function exitBSOD(){
     bsod.classList.remove('show');
-    // "reboot" feel: show boot splash quickly again
     bootSequence();
   }
 
@@ -1389,23 +1367,18 @@ Press any key to continue _`;
     if(action === 'toast:docs'){ toast("Documents","No documents."); return; }
   }
 
-  // keyboard shortcuts:
+  // keyboard shortcuts
   document.addEventListener('keydown', (e)=>{
-    // BSOD: any key exits
     if(bsod.classList.contains('show')){
       e.preventDefault();
       exitBSOD();
       return;
     }
-
-    // ESC cancels boot overlay
     if(e.key === 'Escape' && overlay.classList.contains('show')){
       hideOverlay();
       toast("Windows","Boot/Shutdown canceled.");
       return;
     }
-
-    // Win+R (or Ctrl+R fallback)
     const isWinR = (e.key.toLowerCase() === 'r') && (e.metaKey || e.ctrlKey);
     if(isWinR){
       e.preventDefault();
@@ -1413,46 +1386,114 @@ Press any key to continue _`;
     }
   });
 
+  // ===== PROPER DOS ENGINE =====
+  let DOS_STATE = {
+    cwd: "C:\\",
+    history: [],
+    histPos: 0
+  };
+
+  function initDOS(sid){
+    const input  = document.getElementById(`${sid}_input`);
+    const output = document.getElementById(`${sid}_output`);
+    const screen = document.getElementById(`${sid}_screen`);
+    if(!input || !output || !screen) return;
+
+    const focus = ()=>input.focus();
+    screen.addEventListener("mousedown", focus);
+    focus();
+
+    DOS_STATE.histPos = DOS_STATE.history.length;
+
+    input.addEventListener("keydown", (e)=>{
+      if(e.key === "ArrowUp"){
+        if(DOS_STATE.history.length){
+          DOS_STATE.histPos = Math.max(0, DOS_STATE.histPos - 1);
+          input.value = DOS_STATE.history[DOS_STATE.histPos] || "";
+        }
+        e.preventDefault();
+        return;
+      }
+      if(e.key === "ArrowDown"){
+        if(DOS_STATE.history.length){
+          DOS_STATE.histPos = Math.min(DOS_STATE.history.length, DOS_STATE.histPos + 1);
+          input.value = DOS_STATE.history[DOS_STATE.histPos] || "";
+        }
+        e.preventDefault();
+        return;
+      }
+      if(e.key !== "Enter") return;
+
+      const cmd = (input.value || "").trim();
+      output.innerHTML += `<br>${escapeHtml(DOS_STATE.cwd)}&gt;${escapeHtml(cmd)}`;
+
+      DOS_STATE.history.push(cmd);
+      DOS_STATE.histPos = DOS_STATE.history.length;
+
+      runDOSCommand(cmd, output);
+
+      input.value = "";
+      screen.scrollTop = screen.scrollHeight;
+    });
+  }
+
+  function runDOSCommand(cmdRaw, out){
+    const cmd = (cmdRaw || "").trim().toLowerCase();
+
+    if(cmd === "help"){
+      out.innerHTML += `<br>DIR  CLS  VER  DATE  TIME  ECHO  WINVER  BSOD  EXIT`;
+      return;
+    }
+    if(cmd === "dir"){
+      out.innerHTML += `<br><br> Directory of C:\\<br><br> WINDOWS        &lt;DIR&gt;<br> PROGRAM FILES  &lt;DIR&gt;<br> AUTOEXEC.BAT<br> CONFIG.SYS<br> README.TXT`;
+      return;
+    }
+    if(cmd === "cls"){
+      out.innerHTML = "";
+      return;
+    }
+    if(cmd === "ver"){
+      out.innerHTML += `<br>Windows 98 [Version 4.10.1998]`;
+      return;
+    }
+    if(cmd === "date"){
+      out.innerHTML += `<br>${escapeHtml(new Date().toLocaleDateString())}`;
+      return;
+    }
+    if(cmd === "time"){
+      out.innerHTML += `<br>${escapeHtml(new Date().toLocaleTimeString())}`;
+      return;
+    }
+    if(cmd.startsWith("echo ")){
+      out.innerHTML += `<br>${escapeHtml(cmdRaw.slice(5))}`;
+      return;
+    }
+    if(cmd === "winver"){
+      openWinver();
+      return;
+    }
+    if(cmd === "bsod"){
+      triggerBSOD();
+      return;
+    }
+    if(cmd === "exit"){
+      window.__W98.closeTop();
+      return;
+    }
+
+    out.innerHTML += `<br>Bad command or file name`;
+  }
+
   // volume init
   volSlider.value = Math.round(audioState.vol * 100);
   muteBox.checked = audioState.muted;
   applyVolume();
 
-  // create icons
+  // icons
   addIcon({ id:"mycomputer", label:"My Computer", icon:ICONS.computer, x:16, y:16, onOpen: openMyComputer });
   addIcon({ id:"recycle", label:"Recycle Bin", icon:ICONS.bin, x:16, y:104, onOpen: openRecycleBin });
   addIcon({ id:"readme", label:"README.TXT", icon:ICONS.doc, x:16, y:192, onOpen: openNotepad });
   addIcon({ id:"iexplore", label:"Internet", icon:ICONS.ie, x:16, y:280, onOpen: openIE });
-
-  // start + right-click menus are already set
-  document.addEventListener('click', ()=>{ hideMenus(); hideVolumePopup(); });
-  document.addEventListener('contextmenu', (e)=>{
-    e.preventDefault();
-    hideMenus();
-    hideVolumePopup();
-    rcMenu.style.left = e.clientX + 'px';
-    rcMenu.style.top  = e.clientY + 'px';
-    rcMenu.classList.remove('hidden');
-  });
-
-  // bsod shows: disable context menu pop while bsod up
-  rcMenu.addEventListener('click', (e)=>{
-    const it = e.target.closest('.menuItem');
-    if(!it) return;
-    const action = it.dataset.action;
-    hideMenus();
-    handleAction(action);
-  });
-
-  // helper
-  function escapeHtml(s){
-    return String(s)
-      .replaceAll('&','&amp;')
-      .replaceAll('<','&lt;')
-      .replaceAll('>','&gt;')
-      .replaceAll('"','&quot;')
-      .replaceAll("'","&#039;");
-  }
 
   // boot on load
   bootSequence();
