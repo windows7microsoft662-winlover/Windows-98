@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Windows 98 (Web)</title>
+<title>Web98</title>
 <style>
   :root{
     --desk:#008080;
@@ -1047,21 +1047,15 @@
     });
   }
 
-  function openNotepad(){
-    openWindow({
-      title:"README.TXT - Notepad",
-      w:560, h:420,
-      toolbar:false,
-      bodyHTML: `
-        <div style="padding:10px; font-family:var(--mono); font-size:12px; white-space:pre-wrap;">
-Try Run (Start → Run… or Win+R):
-
-winver  → Windows version dialog
-bsod    → Blue screen
-notepad → this
-cmd     → MS-DOS Prompt
-iexplore→ Internet Explorer
-        </div> WINDOWS 98 (WEB) – README.TXT
+ function openNotepad(){
+  openWindow({
+    title:"README.TXT - Notepad",
+    w:560,
+    h:420,
+    toolbar:false,
+    bodyHTML: `
+<div style="padding:10px; font-family:var(--mono); font-size:12px; white-space:pre-wrap;">
+WINDOWS 98 (WEB) – README.TXT
 =============================
 
 This is a Windows 98 web simulation.
@@ -1096,14 +1090,14 @@ NOTES
 --------------------------------
 • This is a simulation, not a real OS
 • Some commands are for fun
-• Refresh page to reboot Windows 98
+• Refresh the page to reboot Windows 98
 
 Enjoy the nostalgia :)
-
-      `,
-      status:"Line 1, Col 1"
-    });
-  }
+</div>
+    `,
+    status:"Line 1, Col 1"
+  });
+}
 
   function openIE(){
     openWindow({
